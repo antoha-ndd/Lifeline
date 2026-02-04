@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+        }
+        
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .profile-username {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .profile-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+        }
+        
+        .profile-card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar-large {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+            
+            .profile-name {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Theme Selector */
+        .theme-selector {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .theme-option {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .theme-option input {
+            display: none;
+        }
+        
+        .theme-preview {
+            width: 120px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .theme-option input:checked + .theme-preview {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        .theme-preview-dark {
+            background: #0a0a0f;
+        }
+        
+        .theme-preview-light {
+            background: #f8f9fc;
+        }
+        
+        .theme-preview-header {
+            height: 20px;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        }
+        
+        .theme-preview-content {
+            padding: 8px;
+            display: flex;
+            gap: 6px;
+        }
+        
+        .theme-preview-card {
+            flex: 1;
+            height: 35px;
+            border-radius: 4px;
+        }
+        
+        .theme-preview-dark .theme-preview-card {
+            background: #16161f;
+        }
+        
+        .theme-preview-light .theme-preview-card {
+            background: #ffffff;
+            border: 1px solid #d8dce5;
+        }
+        
+        .theme-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .theme-option input:checked ~ .theme-label {
+            color: var(--accent-primary);
+        }
+        
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/projects" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span class="gradient-text">Lifeline</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/projects" class="nav-link">Проекты</a>
+                <a href="/users" class="nav-link" id="usersNavLink" style="display: none;">Пользователи</a>
+                <a href="/settings" class="nav-link" id="settingsNavLink" style="display: none;">Настройки</a>
+            </div>
+            <div class="user-menu"></div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="profileHeader" class="profile-header">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+        
+        <div class="profile-content">
+            <div class="profile-card">
+                <h2>Контактная информация</h2>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label class="form-label" for="profileEmail">Email *</label>
+                        <input type="email" id="profileEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profileFullName">Полное имя</label>
+                        <input type="text" id="profileFullName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profileTelegram">Telegram</label>
+                        <input type="text" id="profileTelegram" class="form-input" placeholder="@username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profilePhone">Телефон</label>
+                        <input type="tel" id="profilePhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telegram уведомления</label>
+                        <div id="telegramNotificationTypes" class="checkbox-list"></div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="profile-card">
+                <h2>Внешний вид</h2>
+                <div class="form-group">
+                    <label class="form-label">Тема оформления</label>
+                    <div class="theme-selector">
+                        <label class="theme-option" id="themeDarkOption">
+                            <input type="radio" name="theme" value="dark" onchange="changeTheme('dark')">
+                            <div class="theme-preview theme-preview-dark">
+                                <div class="theme-preview-header"></div>
+                                <div class="theme-preview-content">
+                                    <div class="theme-preview-card"></div>
+                                    <div class="theme-preview-card"></div>
+                                </div>
+                            </div>
+                            <span class="theme-label">Тёмная</span>
+                        </label>
+                        <label class="theme-option" id="themeLightOption">
+                            <input type="radio" name="theme" value="light" onchange="changeTheme('light')">
+                            <div class="theme-preview theme-preview-light">
+                                <div class="theme-preview-header"></div>
+                                <div class="theme-preview-content">
+                                    <div class="theme-preview-card"></div>
+                                    <div class="theme-preview-card"></div>
+                                </div>
+                            </div>
+                            <span class="theme-label">Светлая</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-card">
+                <h2>Изменить пароль</h2>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label" for="currentPassword">Текущий пароль *</label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">Новый пароль *</label>
+                        <input type="password" id="newPassword" class="form-input" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">Подтвердите новый пароль *</label>
+                        <input type="password" id="confirmPassword" class="form-input" required minlength="6">
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary">Изменить пароль</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        let currentUser = null;
+        const notificationTypeLabels = {
+            'task_assigned': 'Назначение задачи',
+            'task_updated': 'Изменение задачи',
+            'stage_changed': 'Смена этапа',
+            'comment_added': 'Новый комментарий',
+            'attachment_added': 'Новый файл'
+        };
+        
+        async function init() {
+            if (!checkAuth()) {
+                return;
+            }
+            
+            try {
+                currentUser = await api.getCurrentUser();
+                setupUserMenu();
+                renderProfile();
+                loadProfile();
+            } catch (error) {
+                showAlert('Ошибка загрузки профиля: ' + error.message, 'error');
+            }
+        }
+        
+        function setupUserMenu() {
+            const userMenu = document.querySelector('.user-menu');
+            if (userMenu && currentUser) {
+                userMenu.innerHTML = `
+                    <a href="/profile" class="user-name-link" style="cursor: pointer; text-decoration: none; color: var(--text-secondary); transition: color 0.2s;">
+                        <span class="text-secondary">${currentUser.full_name || currentUser.username}</span>
+                    </a>
+                    <a href="/profile" class="user-avatar-link" style="cursor: pointer; text-decoration: none;">
+                        <div class="user-avatar">${getInitials(currentUser.full_name || currentUser.username)}</div>
+                    </a>
+                    <button class="btn btn-ghost btn-sm" onclick="auth.logout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                        </svg>
+                    </button>
+                `;
+            }
+            
+            // Show users link for admins
+            if (currentUser && currentUser.is_admin) {
+                const usersLink = document.getElementById('usersNavLink');
+                if (usersLink) usersLink.style.display = '';
+                const settingsLink = document.getElementById('settingsNavLink');
+                if (settingsLink) settingsLink.style.display = '';
+            }
+        }
+        
+        function renderProfile() {
+            if (!currentUser) return;
+            
+            const header = document.getElementById('profileHeader');
+            const userTypeLabels = {
+                'admin': 'Администратор',
+                'developer': 'Исполнитель',
+                'user': 'Пользователь'
+            };
+            
+            const userTypeColors = {
+                'admin': 'var(--error)',
+                'developer': 'var(--info)',
+                'user': 'var(--text-secondary)'
+            };
+            
+            const fullName = currentUser.full_name || currentUser.username;
+            const initials = getInitials(fullName);
+            const userType = currentUser.user_type || 'user';
+            
+            // Organization and Department info
+            const orgName = currentUser.organization ? escapeHtml(currentUser.organization.name) : 'Не указана';
+            const deptName = currentUser.department ? escapeHtml(currentUser.department.name) : 'Не указано';
+            
+            header.innerHTML = `
+                <div class="profile-avatar-large">${initials}</div>
+                <div class="profile-info">
+                    <div class="profile-name">${escapeHtml(fullName)}</div>
+                    <div class="profile-username">@${escapeHtml(currentUser.username)}</div>
+                    <div class="profile-org-dept" style="margin-top: 0.75rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="color: var(--text-secondary); font-size: 0.95rem;">
+                            <strong style="color: var(--text-primary);">Организация:</strong> ${orgName}
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.95rem;">
+                            <strong style="color: var(--text-primary);">Подразделение:</strong> ${deptName}
+                        </div>
+                    </div>
+                    <div class="profile-badges">
+                        <span class="badge" style="background: ${userTypeColors[userType] || userTypeColors['user']};">
+                            ${userTypeLabels[userType] || 'Пользователь'}
+                        </span>
+                        ${currentUser.is_blocked 
+                            ? '<span class="badge" style="background: var(--error);">Заблокирован</span>'
+                            : '<span class="badge" style="background: var(--success);">Активен</span>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadProfile() {
+            if (!currentUser) return;
+            
+            document.getElementById('profileEmail').value = currentUser.email || '';
+            document.getElementById('profileFullName').value = currentUser.full_name || '';
+            document.getElementById('profileTelegram').value = currentUser.telegram || '';
+            document.getElementById('profilePhone').value = currentUser.phone || '';
+            
+            const availableTypes = Object.keys(notificationTypeLabels);
+            const selectedTypes = Array.isArray(currentUser.telegram_notify_types)
+                ? currentUser.telegram_notify_types
+                : availableTypes;
+            renderNotificationTypes(availableTypes, selectedTypes);
+            
+            // Load theme setting
+            const theme = currentUser.theme || 'dark';
+            const themeRadio = document.querySelector(`input[name="theme"][value="${theme}"]`);
+            if (themeRadio) themeRadio.checked = true;
+        }
+
+        function renderNotificationTypes(types, selected) {
+            const container = document.getElementById('telegramNotificationTypes');
+            if (!container) return;
+            
+            const selectedSet = new Set(selected || []);
+            container.innerHTML = types.map(type => `
+                <label class="checkbox-item">
+                    <input type="checkbox" name="telegramNotifyType" value="${type}" ${selectedSet.has(type) ? 'checked' : ''}>
+                    <span>${notificationTypeLabels[type] || type}</span>
+                </label>
+            `).join('');
+        }
+        
+        async function changeTheme(theme) {
+            // Apply theme immediately
+            themeManager.apply(theme);
+            
+            // Save to server
+            try {
+                const updatedUser = await api.updateMyProfile({ theme: theme });
+                currentUser = updatedUser;
+                auth.setUser(updatedUser);
+                showAlert('Тема изменена', 'success');
+            } catch (error) {
+                showAlert('Ошибка сохранения темы: ' + error.message, 'error');
+            }
+        }
+        
+        // Profile form handler
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userData = {
+                email: document.getElementById('profileEmail').value,
+                full_name: document.getElementById('profileFullName').value || null,
+                telegram: document.getElementById('profileTelegram').value || null,
+                telegram_notify_types: Array.from(document.querySelectorAll('input[name="telegramNotifyType"]:checked'))
+                    .map((el) => el.value),
+                phone: document.getElementById('profilePhone').value || null
+            };
+            
+            try {
+                const updatedUser = await api.updateMyProfile(userData);
+                currentUser = updatedUser;
+                auth.setUser(updatedUser);
+                showAlert('Профиль обновлен', 'success');
+                renderProfile();
+                setupUserMenu();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        // Password form handler
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('Новые пароли не совпадают', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showAlert('Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+            
+            // Verify current password by trying to login
+            try {
+                await api.login(currentUser.username, currentPassword);
+            } catch (error) {
+                showAlert('Текущий пароль неверен', 'error');
+                return;
+            }
+            
+            // Update password
+            try {
+                await api.updateMyProfile({ password: newPassword });
+                showAlert('Пароль успешно изменен', 'success');
+                document.getElementById('passwordForm').reset();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
+

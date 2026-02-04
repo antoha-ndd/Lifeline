@@ -1,0 +1,3249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20260204">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/projects" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span class="gradient-text">Lifeline</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/projects" class="nav-link">Проекты</a>
+                <a href="#" class="nav-link active" id="navProjectName">Загрузка...</a>
+                <a href="/users" class="nav-link" id="usersNavLink" style="display: none;">Пользователи</a>
+                <a href="/settings" class="nav-link" id="settingsNavLink" style="display: none;">Настройки</a>
+            </div>
+            <div class="user-menu"></div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="projects-header">
+            <div>
+                <h1 id="projectTitle">Загрузка...</h1>
+                <p class="text-secondary" id="projectDescription"></p>
+            </div>
+            <div class="flex gap-2">
+                <a id="kanbanLink" href="#" class="btn btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Kanban
+                </a>
+                <a id="historyLink" href="#" class="btn btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        <line x1="8" y1="7" x2="16" y2="7"/>
+                        <line x1="8" y1="11" x2="16" y2="11"/>
+                        <line x1="8" y1="15" x2="12" y2="15"/>
+                    </svg>
+                    Лента
+                </a>
+                <button class="btn btn-secondary" onclick="openModal('settingsModal')" id="settingsBtn" style="display: none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                    </svg>
+                    Настройки
+                </button>
+                <button class="btn btn-primary" onclick="openModal('createTaskModal')" id="createTaskBtn" style="display: none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Новая задача
+                </button>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="task-list-header">
+            <div class="task-filters">
+                <div class="search-input">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" class="form-input" id="searchInput" placeholder="Поиск задач...">
+                </div>
+                <select class="form-select task-filter" id="stageFilter" style="width: auto; min-width: 150px;">
+                    <option value="">Все этапы</option>
+                </select>
+                <select class="form-select task-filter" id="authorFilter" style="width: auto; min-width: 150px; display: none;">
+                    <option value="">Все авторы</option>
+                </select>
+                <select class="form-select task-filter" id="assigneeFilter" style="width: auto; min-width: 150px;">
+                    <option value="">Все исполнители</option>
+                </select>
+                <select class="form-select task-filter" id="sortBy" style="width: auto; min-width: 150px;">
+                    <option value="created_at">По дате создания</option>
+                    <option value="priority">По приоритету</option>
+                    <option value="title">По названию</option>
+                    <option value="due_date">По сроку</option>
+                </select>
+                <select class="form-select task-filter" id="sortDir" style="width: auto; min-width: 100px;">
+                    <option value="desc">↓ Убыв.</option>
+                    <option value="asc">↑ Возр.</option>
+                </select>
+                <label class="checkbox-label" id="onlyMineLabel" style="margin-left: 1rem; display: none; align-items: center; gap: 0.5rem; cursor: pointer; white-space: nowrap;">
+                    <input type="checkbox" id="onlyMine" onchange="onOnlyMineChange()">
+                    <span>Только мои</span>
+                </label>
+                <label class="checkbox-label" style="margin-left: 1rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; white-space: nowrap;">
+                    <input type="checkbox" id="showArchived" onchange="loadTasks()">
+                    <span>Показать архив</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Tasks Table -->
+        <div id="tasksContainer">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+    </main>
+    
+    <!-- Create Task Modal -->
+    <div class="modal-overlay" id="createTaskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать задачу</h3>
+                <button class="modal-close" onclick="closeModal('createTaskModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createTaskForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="taskTitle">Название</label>
+                        <input type="text" id="taskTitle" class="form-input" placeholder="Название задачи" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskDescription">Описание</label>
+                        <textarea id="taskDescription" class="form-textarea" placeholder="Описание задачи"></textarea>
+                    </div>
+                    <div class="form-group" id="taskStageGroup">
+                        <label class="form-label" for="taskStage">Этап</label>
+                        <select id="taskStage" class="form-select" required></select>
+                    </div>
+                    <div class="form-group" id="taskAssigneeGroup">
+                        <label class="form-label" for="taskAssignee">Исполнитель</label>
+                        <select id="taskAssignee" class="form-select">
+                            <option value="">Не назначен</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskPriority">Приоритет</label>
+                        <select id="taskPriority" class="form-select">
+                            <option value="0">Низкий</option>
+                            <option value="1" selected>Обычный</option>
+                            <option value="2">Высокий</option>
+                            <option value="3">Критичный</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskDueDate">Срок выполнения</label>
+                        <input type="date" id="taskDueDate" class="form-input">
+                    </div>
+                    <div id="customFieldsCreate"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createTaskModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="createTaskSubmitBtn" style="display: none;">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Task Modal -->
+    <div class="modal-overlay" id="editTaskModal">
+        <div class="modal" style="max-width: min(1200px, 95vw); max-height: min(90vh, 900px); width: 100%; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3 class="modal-title">Задача <span id="editTaskIdLabel">#</span></h3>
+                <button class="modal-close" onclick="closeTaskModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Task Tabs -->
+            <div class="task-tabs" style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem;">
+                <button type="button" class="task-tab active" data-tab="main" onclick="switchTaskTab('main')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Основное
+                </button>
+                <button type="button" class="task-tab" data-tab="params" onclick="switchTaskTab('params')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Параметры
+                </button>
+                <button type="button" class="task-tab" data-tab="extra" onclick="switchTaskTab('extra')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M12 3v18M3 12h18"/>
+                    </svg>
+                    Дополнительно
+                </button>
+                <button type="button" class="task-tab" data-tab="links" onclick="switchTaskTab('links')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    Связи
+                    <span id="linksBadge" class="chat-badge" style="display: none;">0</span>
+                </button>
+                <button type="button" class="task-tab" data-tab="chat" onclick="switchTaskTab('chat')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Чат
+                    <span id="chatBadge" class="chat-badge" style="display: none;">0</span>
+                </button>
+                <button type="button" class="task-tab" data-tab="files" onclick="switchTaskTab('files')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    Файлы
+                    <span id="filesBadge" class="chat-badge" style="display: none;">0</span>
+                </button>
+                <button type="button" class="task-tab" data-tab="history" onclick="switchTaskTab('history')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    История
+                </button>
+            </div>
+            
+            <form id="editTaskForm">
+                <!-- Main Tab Content -->
+                <div class="task-tab-content active" id="taskTabMain">
+                    <div class="modal-body">
+                        <input type="hidden" id="editTaskId">
+                        
+                        <!-- Task Info: Author and Created Date -->
+                        <div class="task-info-bar" style="display: flex; gap: 2rem; padding: 0.75rem 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.875rem;">
+                            <div>
+                                <span class="text-secondary">Автор:</span>
+                                <span id="editTaskAuthor" style="margin-left: 0.5rem;">—</span>
+                            </div>
+                            <div>
+                                <span class="text-secondary">Создано:</span>
+                                <span id="editTaskCreatedAt" style="margin-left: 0.5rem;">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskTitle">Название</label>
+                            <input type="text" id="editTaskTitle" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskDescription">Описание</label>
+                            <textarea id="editTaskDescription" class="form-textarea"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Params Tab Content -->
+                <div class="task-tab-content" id="taskTabParams">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskStage">Этап</label>
+                            <select id="editTaskStage" class="form-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskAssignee">Исполнитель</label>
+                            <select id="editTaskAssignee" class="form-select">
+                                <option value="">Не назначен</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskPriority">Приоритет</label>
+                            <select id="editTaskPriority" class="form-select">
+                                <option value="0">Низкий</option>
+                                <option value="1">Обычный</option>
+                                <option value="2">Высокий</option>
+                                <option value="3">Критичный</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editTaskDueDate">Срок выполнения</label>
+                            <input type="date" id="editTaskDueDate" class="form-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Extra Tab Content (Custom Fields) -->
+                <div class="task-tab-content" id="taskTabExtra">
+                    <div class="modal-body">
+                        <div id="customFieldsEdit"></div>
+                        <div id="noCustomFields" class="text-center text-secondary py-4" style="display: none;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem; opacity: 0.3;">
+                                <path d="M12 3v18M3 12h18"/>
+                            </svg>
+                            <p>Дополнительные поля не настроены</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Tab Content -->
+                <div class="task-tab-content" id="taskTabChat">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="text-center text-secondary py-4">Загрузка сообщений...</div>
+                        </div>
+                        <div class="chat-input-area" style="display: none;">
+                            <div class="chat-input-wrapper">
+                                <textarea id="chatInput" class="chat-input" placeholder="Напишите сообщение..." rows="1"></textarea>
+                                <div class="chat-input-actions">
+                                    <button type="button" class="chat-action-btn" onclick="toggleEmojiPicker(event)" title="Смайлики">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                                        </svg>
+                                    </button>
+                                    <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="uploadChatImage(this)">
+                                    <button type="button" class="chat-action-btn" onclick="document.getElementById('chatImageInput').click()" title="Отправить картинку">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                                            <polyline points="21 15 16 10 5 21"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary chat-send-btn" onclick="sendComment()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
+                            <div id="emojiPicker" class="emoji-picker" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Files Tab Content -->
+                <div class="task-tab-content" id="taskTabFiles">
+                    <div class="modal-body">
+                        <div id="taskAttachments" class="files-grid"></div>
+                        <div class="mt-3 pt-3" style="border-top: 1px solid var(--border-color);">
+                            <input type="file" id="attachmentInput" style="display: none;" multiple>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('attachmentInput').click()" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                                </svg>
+                                Прикрепить файл
+                            </button>
+                            <span id="uploadProgress" class="text-secondary ml-2" style="font-size: 0.85rem;"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History Tab Content -->
+                <div class="task-tab-content" id="taskTabHistory">
+                    <div class="modal-body">
+                        <div id="taskHistoryList">
+                            <div class="text-center text-secondary py-4">Загрузка истории...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Links Tab Content -->
+                <div class="task-tab-content" id="taskTabLinks">
+                    <div class="modal-body">
+                        <!-- Add Link Form -->
+                        <div class="add-link-form" id="addLinkForm" style="display: none; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: 1rem;">
+                            <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem;">Добавить связь</h4>
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                                <select id="linkType" class="form-select" style="width: auto; min-width: 160px;">
+                                    <option value="relates">Связана с</option>
+                                    <option value="blocks">Блокирует</option>
+                                    <option value="blocked_by">Заблокирована</option>
+                                    <option value="duplicates">Дублирует</option>
+                                    <option value="duplicated_by">Дублируется</option>
+                                    <option value="parent">Родительская для</option>
+                                    <option value="child">Дочерняя от</option>
+                                </select>
+                                <input type="text" id="linkTaskSearch" class="form-input" placeholder="Поиск задачи по названию или #ID" style="flex: 1; min-width: 200px;">
+                                <button type="button" class="btn btn-primary" onclick="addTaskLink()">Связать</button>
+                                <button type="button" class="btn btn-success" onclick="createLinkedTask()" title="Создать новую связанную задачу">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                    Создать
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="hideLinkForm()">Отмена</button>
+                            </div>
+                            <div id="linkTaskResults" style="margin-top: 0.75rem; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="margin: 0; font-size: 1rem;">Связанные задачи</h4>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="button" class="btn btn-sm btn-secondary" id="showLinksMapBtn" onclick="openTaskLinksMap()" title="Показать на карте связей">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    Карта
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" id="showAddLinkBtn" onclick="showLinkForm()" style="display: none;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                    Добавить связь
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="taskLinksList">
+                            <div class="text-center text-secondary py-4">Загрузка связей...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Common Footer for all tabs -->
+                <div class="modal-footer" id="editTaskFooter">
+                    <button type="button" class="btn btn-success" id="createSubtaskBtn" onclick="createSubtask()" style="display: none;" title="Создать подзадачу">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Подзадача
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="linksMapBtn" onclick="openTaskLinksMap()" title="Карта связей">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                        </svg>
+                        Карта
+                    </button>
+                    <button type="button" class="btn btn-warning" id="archiveTaskBtn" onclick="toggleArchiveTask()" style="display: none;">В архив</button>
+                    <button type="button" class="btn btn-danger" id="deleteTaskBtn" onclick="deleteCurrentTask()" style="display: none;">Удалить</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Закрыть</button>
+                    <button type="submit" class="btn btn-primary" id="saveTaskBtn" style="display: none;">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Image Viewer Modal -->
+    <div class="modal-overlay" id="imageViewerModal" style="background: rgba(0,0,0,0.95);">
+        <div class="modal" style="max-width: 90vw; max-height: 90vh; background: transparent; border: none; box-shadow: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
+            <button class="modal-close" onclick="closeModal('imageViewerModal')" style="position: absolute; top: -2.5rem; right: 0; background: rgba(255,255,255,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: white;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <img id="imageViewerImg" src="" alt="" style="max-width: 85vw; max-height: 75vh; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); object-fit: contain;">
+            <div id="imageViewerCaption" style="color: white; margin-top: 1rem; font-size: 0.95rem; text-align: center;"></div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal" style="max-width: min(1400px, 95vw); max-height: min(90vh, 1000px); width: 95vw; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3 class="modal-title">Настройки проекта</h3>
+                <button class="modal-close" onclick="closeModal('settingsModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="flex: 1; overflow-y: auto; min-height: 0;">
+                <div class="tabs">
+                    <button class="tab active" data-tab="stages">Этапы</button>
+                    <button class="tab" data-tab="transitions">Переходы</button>
+                    <button class="tab" data-tab="fieldgroups">Группы полей</button>
+                    <button class="tab" data-tab="fields">Поля</button>
+                    <button class="tab" data-tab="fieldpermissions">Доступ к полям</button>
+                    <button class="tab" data-tab="permissions">Права</button>
+                </div>
+                
+                <div id="tabStages" class="tab-content">
+                    <p class="text-secondary mb-2">Этапы определяют жизненный цикл задачи</p>
+                    <div id="stagesList"></div>
+                    <form id="addStageForm" class="flex gap-2 mt-4">
+                        <input type="text" id="newStageName" class="form-input" placeholder="Название этапа" required style="flex: 1;">
+                        <input type="color" id="newStageColor" value="#6366f1" style="width: 50px; height: 44px; border: none; cursor: pointer;">
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+                
+                <div id="tabTransitions" class="tab-content hidden">
+                    <p class="text-secondary mb-2">Настройте разрешённые переходы между этапами. Если переходы не заданы, разрешены любые.</p>
+                    <div id="transitionsList"></div>
+                    <form id="addTransitionForm" class="mt-4">
+                        <div class="flex gap-2">
+                            <select id="transitionFrom" class="form-select" required style="flex: 1;">
+                                <option value="">Из этапа...</option>
+                            </select>
+                            <span class="flex items-center">→</span>
+                            <select id="transitionTo" class="form-select" required style="flex: 1;">
+                                <option value="">В этап...</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Добавить</button>
+                        </div>
+                        <div class="mt-2">
+                            <input type="text" id="transitionName" class="form-input" placeholder="Название перехода (опционально)">
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="tabFieldgroups" class="tab-content hidden">
+                    <p class="text-secondary mb-2">Объединяйте поля в группы для удобства на форме задачи</p>
+                    <div id="fieldGroupsList"></div>
+                    <form id="addFieldGroupForm" class="flex gap-2 mt-4">
+                        <input type="text" id="newGroupName" class="form-input" placeholder="Название группы" required style="flex: 1;">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="newGroupCollapsed"> Свёрнута
+                        </label>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+                
+                <div id="tabFields" class="tab-content hidden">
+                    <p class="text-secondary mb-2">Настраиваемые поля задач</p>
+                    <div id="fieldsList"></div>
+                    <form id="addFieldForm" class="mt-4">
+                        <div class="flex gap-2 flex-wrap">
+                            <input type="text" id="newFieldName" class="form-input" placeholder="Название поля" required style="flex: 1; min-width: 150px;">
+                            <select id="newFieldType" class="form-select" style="width: auto;">
+                                <option value="text">Текст</option>
+                                <option value="number">Число</option>
+                                <option value="date">Дата</option>
+                                <option value="select">Выбор</option>
+                                <option value="checkbox">Чекбокс</option>
+                            </select>
+                            <select id="newFieldGroup" class="form-select" style="width: auto;">
+                                <option value="">Без группы</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Добавить</button>
+                        </div>
+                        <div id="fieldOptions" class="mt-2 hidden">
+                            <input type="text" id="newFieldOptions" class="form-input" placeholder="Опции через запятую">
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="tabFieldpermissions" class="tab-content hidden">
+                    <p class="text-secondary mb-2">Настройте права доступа к полям в зависимости от этапа и роли пользователя</p>
+                    <div class="mb-4">
+                        <label class="form-label">Фильтры:</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <select id="fieldPermissionField" class="form-select" style="flex: 1; min-width: 150px;">
+                                <option value="">Все поля</option>
+                            </select>
+                            <select id="fieldPermissionStage" class="form-select" style="flex: 1; min-width: 150px;">
+                                <option value="">Все этапы</option>
+                            </select>
+                            <select id="fieldPermissionRole" class="form-select" style="flex: 1; min-width: 150px;">
+                                <option value="">Все роли</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="fieldPermissionsList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center text-secondary py-4">Загрузка...</div>
+                    </div>
+                    <form id="addFieldPermissionForm" class="mt-4">
+                        <div class="flex gap-2 flex-wrap">
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label" for="newFieldPermissionField">Поле</label>
+                                <select id="newFieldPermissionField" class="form-select" required>
+                                    <option value="">Выберите поле</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label" for="newFieldPermissionStage">Этап</label>
+                                <select id="newFieldPermissionStage" class="form-select">
+                                    <option value="">Все этапы</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label class="form-label" for="newFieldPermissionRole">Роль</label>
+                                <select id="newFieldPermissionRole" class="form-select">
+                                    <option value="">Все роли</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 0;">
+                                <button type="submit" class="btn btn-primary">Добавить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="tabPermissions" class="tab-content hidden">
+                    <div id="permissionsList"></div>
+                    <form id="addPermissionForm" class="flex gap-2 mt-4">
+                        <select id="permissionUser" class="form-select" required style="flex: 1;"></select>
+                        <select id="permissionType" class="form-select" style="width: auto;">
+                            <option value="read">Чтение</option>
+                            <option value="write">Запись</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/app.js?v=20260204"></script>
+    <script>
+        const projectId = window.location.pathname.split('/').pop();
+        let project = null;
+        let tasks = [];
+        let users = [];
+        let userProjectPermission = null; // 'read' or 'write' or null (admin)
+        let currentUser = null; // Current logged in user
+        
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                tab.classList.add('active');
+                const tabName = tab.dataset.tab;
+                const tabId = 'tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+                document.getElementById(tabId).classList.remove('hidden');
+                
+                // Load field permissions when tab is opened
+                if (tabName === 'fieldpermissions') {
+                    populateFieldPermissionSelects();
+                    loadFieldPermissions();
+                }
+            });
+        });
+        
+        // Field type change
+        document.getElementById('newFieldType').addEventListener('change', (e) => {
+            const optionsDiv = document.getElementById('fieldOptions');
+            if (e.target.value === 'select' || e.target.value === 'multiselect') {
+                optionsDiv.classList.remove('hidden');
+            } else {
+                optionsDiv.classList.add('hidden');
+            }
+        });
+        
+        async function loadProject() {
+            try {
+                project = await api.getProject(projectId);
+                document.getElementById('projectTitle').textContent = project.name;
+                document.getElementById('projectDescription').textContent = project.description || '';
+                document.getElementById('navProjectName').textContent = project.name;
+                document.getElementById('kanbanLink').href = `/kanban/${projectId}`;
+                document.getElementById('historyLink').href = `/history/${projectId}`;
+                
+                populateStageSelects();
+                renderStagesList();
+                renderFieldsList();
+                renderCustomFields();
+                populateFieldPermissionSelects();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function loadUsers() {
+            try {
+                users = await api.getUsers();
+                populateUserSelects();
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+        
+        async function loadPermissions() {
+            try {
+                const permissions = await api.getProjectPermissions(projectId);
+                renderPermissionsList(permissions);
+                
+                // Get current user's permission
+                currentUser = await api.getCurrentUser();
+                if (currentUser.is_admin) {
+                    userProjectPermission = 'write'; // Admins have write access
+                } else {
+                    const userPermission = permissions.find(p => p.user_id === currentUser.id);
+                    userProjectPermission = userPermission ? userPermission.permission_type : null;
+                }
+                
+                // Show author filter only if user is not regular user (user_type !== 'user')
+                if (currentUser.user_type !== 'user' || currentUser.is_admin) {
+                    const authorFilter = document.getElementById('authorFilter');
+                    if (authorFilter) {
+                        authorFilter.style.display = '';
+                    }
+                }
+                
+                // Show "Только мои" checkbox for executors (developer)
+                if (currentUser.user_type === 'developer' && !currentUser.is_admin) {
+                    const onlyMineLabel = document.getElementById('onlyMineLabel');
+                    const onlyMineCheckbox = document.getElementById('onlyMine');
+                    if (onlyMineLabel) {
+                        onlyMineLabel.style.display = 'flex';
+                    }
+                    // Restore saved state or enable by default for executors
+                    if (onlyMineCheckbox) {
+                        const savedState = localStorage.getItem(`onlyMine_${currentUser.id}`);
+                        if (savedState !== null) {
+                            onlyMineCheckbox.checked = savedState === 'true';
+                        } else {
+                            onlyMineCheckbox.checked = true; // Default: enabled for executors
+                        }
+                    }
+                }
+                
+                // Settings button visibility is handled in showEditButtonsIfAllowed()
+                
+                // Show edit buttons if user has write access
+                showEditButtonsIfAllowed();
+            } catch (error) {
+                console.error('Failed to load permissions:', error);
+            }
+        }
+        
+        function showEditButtonsIfAllowed() {
+            // Administrators always have full write access
+            const isAdmin = currentUser && currentUser.is_admin;
+            const hasWriteAccess = isAdmin || !userProjectPermission || userProjectPermission === 'write';
+            
+            // Show/hide "Новая задача" button based on write access
+            const createTaskBtn = document.getElementById('createTaskBtn');
+            if (createTaskBtn) {
+                createTaskBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show/hide "Настройки проекта" button - only admins can access settings
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) {
+                settingsBtn.style.display = isAdmin ? '' : 'none';
+            }
+            
+            // Show/hide submit buttons in create task form based on write access
+            const createTaskSubmit = document.getElementById('createTaskSubmitBtn');
+            if (createTaskSubmit) {
+                createTaskSubmit.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show/hide submit button in edit task form based on write access
+            const saveTaskBtn = document.getElementById('saveTaskBtn');
+            if (saveTaskBtn) {
+                saveTaskBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show/hide archive and delete buttons in task modal based on write access
+            const archiveBtn = document.getElementById('archiveTaskBtn');
+            if (archiveBtn) {
+                archiveBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            const deleteBtn = document.getElementById('deleteTaskBtn');
+            if (deleteBtn) {
+                deleteBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            const createSubtaskBtn = document.getElementById('createSubtaskBtn');
+            if (createSubtaskBtn) {
+                createSubtaskBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show/hide comment input area based on write access
+            const chatInputArea = document.querySelector('.chat-input-area');
+            if (chatInputArea) {
+                chatInputArea.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show/hide attachment upload button based on write access
+            const attachmentBtn = document.querySelector('button[onclick*="attachmentInput"]');
+            if (attachmentBtn) {
+                attachmentBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            // Show edit/delete buttons in comments (they are shown dynamically in renderComment)
+            // Show delete buttons in attachments (they are shown dynamically)
+            
+            // Show/hide all edit buttons in settings modal based on write access
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal) {
+                settingsModal.querySelectorAll('button[onclick*="delete"], button[type="submit"], button[onclick*="create"], button[onclick*="add"]').forEach(btn => {
+                    btn.style.display = hasWriteAccess ? '' : 'none';
+                });
+            }
+            
+            // Enable form fields if write access
+            if (hasWriteAccess) {
+                const editTaskForm = document.getElementById('editTaskForm');
+                if (editTaskForm) {
+                    const inputs = editTaskForm.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        if (input.getAttribute('data-field-readonly') === 'true') {
+                            input.disabled = true;
+                            input.readOnly = true;
+                            return;
+                        }
+                        input.disabled = false;
+                        input.readOnly = false;
+                    });
+                }
+                
+                const createTaskForm = document.getElementById('createTaskForm');
+                if (createTaskForm) {
+                    const inputs = createTaskForm.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        if (input.getAttribute('data-field-readonly') === 'true') {
+                            input.disabled = true;
+                            input.readOnly = true;
+                            return;
+                        }
+                        input.disabled = false;
+                        input.readOnly = false;
+                    });
+                }
+            } else {
+                // Make form fields read-only if read-only permission
+                const editTaskForm = document.getElementById('editTaskForm');
+                if (editTaskForm) {
+                    const inputs = editTaskForm.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                        input.readOnly = true;
+                    });
+                }
+                
+                const createTaskForm = document.getElementById('createTaskForm');
+                if (createTaskForm) {
+                    const inputs = createTaskForm.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                        input.readOnly = true;
+                    });
+                }
+            }
+
+            // Regular users cannot change stage in edit form
+            if (currentUser && currentUser.user_type === 'user' && !currentUser.is_admin) {
+                const editStage = document.getElementById('editTaskStage');
+                if (editStage) {
+                    editStage.disabled = true;
+                }
+            }
+        }
+        
+        function populateStageSelects() {
+            const stages = project.stages || [];
+            const options = stages.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+            
+            document.getElementById('taskStage').innerHTML = options;
+            document.getElementById('editTaskStage').innerHTML = options;
+            document.getElementById('stageFilter').innerHTML = '<option value="">Все этапы</option>' + options;
+        }
+        
+        function populateUserSelects() {
+            const options = users.map(u => `<option value="${u.id}">${escapeHtml(u.full_name || u.username)}</option>`).join('');
+            
+            document.getElementById('taskAssignee').innerHTML = '<option value="">Не назначен</option>' + options;
+            document.getElementById('editTaskAssignee').innerHTML = '<option value="">Не назначен</option>' + options;
+            document.getElementById('authorFilter').innerHTML = '<option value="">Все авторы</option>' + options;
+            document.getElementById('assigneeFilter').innerHTML = '<option value="">Все исполнители</option>' + options;
+            document.getElementById('permissionUser').innerHTML = options;
+        }
+        
+        function renderStagesList() {
+            const list = document.getElementById('stagesList');
+            const stages = (project.stages || []).sort((a, b) => a.order - b.order);
+            
+            list.innerHTML = stages.map((stage, index) => `
+                <div class="card mb-2 flex items-center justify-between stage-item" 
+                     style="padding: 0.75rem 1rem; cursor: grab;" 
+                     draggable="true" 
+                     data-stage-id="${stage.id}" 
+                     data-stage-order="${stage.order}">
+                    <div class="flex items-center gap-2">
+                        <span class="drag-handle" style="color: var(--text-secondary); cursor: grab;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+                                <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                                <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                            </svg>
+                        </span>
+                        <span class="column-indicator" style="background: ${stage.color};"></span>
+                        <span>${escapeHtml(stage.name)}</span>
+                        <span class="text-secondary" style="font-size: 0.75rem;">#${stage.order}</span>
+                        ${stage.is_initial ? '<span class="stage-badge" style="font-size: 0.7rem;">Начальный</span>' : ''}
+                        ${stage.is_final ? '<span class="stage-badge" style="font-size: 0.7rem;">Конечный</span>' : ''}
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="btn btn-ghost btn-sm" onclick="moveStageUp(${stage.id})" ${index === 0 ? 'disabled' : ''} title="Вверх">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 15l-6-6-6 6"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-sm" onclick="moveStageDown(${stage.id})" ${index === stages.length - 1 ? 'disabled' : ''} title="Вниз">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-sm" onclick="deleteStage(${stage.id})" title="Удалить">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Setup drag-and-drop for stages
+            setupStagesDragDrop();
+            
+            // Populate transition selects
+            const stageOptions = stages.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+            document.getElementById('transitionFrom').innerHTML = '<option value="">Из этапа...</option>' + stageOptions;
+            document.getElementById('transitionTo').innerHTML = '<option value="">В этап...</option>' + stageOptions;
+        }
+        
+        function setupStagesDragDrop() {
+            const list = document.getElementById('stagesList');
+            const items = list.querySelectorAll('.stage-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragstart', handleStageDragStart);
+                item.addEventListener('dragend', handleStageDragEnd);
+                item.addEventListener('dragover', handleStageDragOver);
+                item.addEventListener('drop', handleStageDrop);
+            });
+        }
+        
+        let draggedStageId = null;
+        
+        function handleStageDragStart(e) {
+            draggedStageId = parseInt(e.currentTarget.dataset.stageId);
+            e.currentTarget.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleStageDragEnd(e) {
+            e.currentTarget.style.opacity = '1';
+            draggedStageId = null;
+            document.querySelectorAll('.stage-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+        
+        function handleStageDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const item = e.currentTarget;
+            document.querySelectorAll('.stage-item').forEach(i => i.classList.remove('drag-over'));
+            item.classList.add('drag-over');
+        }
+        
+        async function handleStageDrop(e) {
+            e.preventDefault();
+            const targetId = parseInt(e.currentTarget.dataset.stageId);
+            
+            if (draggedStageId === targetId) return;
+            
+            const stages = [...project.stages].sort((a, b) => a.order - b.order);
+            const draggedIndex = stages.findIndex(s => s.id === draggedStageId);
+            const targetIndex = stages.findIndex(s => s.id === targetId);
+            
+            if (draggedIndex === -1 || targetIndex === -1) return;
+            
+            // Move the dragged item
+            const [draggedStage] = stages.splice(draggedIndex, 1);
+            stages.splice(targetIndex, 0, draggedStage);
+            
+            // Update orders - ensure int types
+            const stageOrders = stages.map((s, i) => ({ id: parseInt(s.id), order: parseInt(i) }));
+            
+            try {
+                await api.reorderStages(projectId, stageOrders);
+                // Update local project data
+                stages.forEach((s, i) => {
+                    const stage = project.stages.find(ps => ps.id === s.id);
+                    if (stage) stage.order = i;
+                });
+                renderStagesList();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function moveStageUp(stageId) {
+            const stages = [...project.stages].sort((a, b) => a.order - b.order);
+            const index = stages.findIndex(s => s.id === stageId);
+            if (index <= 0) return;
+            
+            // Swap with previous
+            [stages[index], stages[index - 1]] = [stages[index - 1], stages[index]];
+            
+            // Ensure int types
+            const stageOrders = stages.map((s, i) => ({ id: parseInt(s.id), order: parseInt(i) }));
+            
+            try {
+                await api.reorderStages(projectId, stageOrders);
+                stages.forEach((s, i) => {
+                    const stage = project.stages.find(ps => ps.id === s.id);
+                    if (stage) stage.order = i;
+                });
+                renderStagesList();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function moveStageDown(stageId) {
+            const stages = [...project.stages].sort((a, b) => a.order - b.order);
+            const index = stages.findIndex(s => s.id === stageId);
+            if (index === -1 || index >= stages.length - 1) return;
+            
+            // Swap with next
+            [stages[index], stages[index + 1]] = [stages[index + 1], stages[index]];
+            
+            // Ensure int types
+            const stageOrders = stages.map((s, i) => ({ id: parseInt(s.id), order: parseInt(i) }));
+            
+            try {
+                await api.reorderStages(projectId, stageOrders);
+                stages.forEach((s, i) => {
+                    const stage = project.stages.find(ps => ps.id === s.id);
+                    if (stage) stage.order = i;
+                });
+                renderStagesList();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        let transitions = [];
+        
+        async function loadTransitions() {
+            try {
+                transitions = await api.getTransitions(projectId);
+                renderTransitionsList();
+            } catch (error) {
+                console.error('Failed to load transitions:', error);
+            }
+        }
+        
+        function renderTransitionsList() {
+            const list = document.getElementById('transitionsList');
+            
+            if (transitions.length === 0) {
+                list.innerHTML = '<p class="text-secondary">Переходы не настроены. Разрешены любые перемещения задач.</p>';
+                return;
+            }
+            
+            list.innerHTML = transitions.map(t => `
+                <div class="card mb-2 flex items-center justify-between" style="padding: 0.75rem 1rem;">
+                    <div class="flex items-center gap-2">
+                        <span>${escapeHtml(t.from_stage_name)}</span>
+                        <span class="text-secondary">→</span>
+                        <span>${escapeHtml(t.to_stage_name)}</span>
+                        ${t.name ? `<span class="text-secondary">(${escapeHtml(t.name)})</span>` : ''}
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="deleteTransition(${t.id})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        async function deleteTransition(transitionId) {
+            if (!confirm('Удалить переход?')) return;
+            try {
+                await api.deleteTransition(projectId, transitionId);
+                loadTransitions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        let fieldGroups = [];
+        
+        async function loadFieldGroups() {
+            try {
+                fieldGroups = await api.getFieldGroups(projectId);
+                renderFieldGroupsList();
+                populateFieldGroupSelect();
+            } catch (error) {
+                console.error('Failed to load field groups:', error);
+            }
+        }
+        
+        function renderFieldGroupsList() {
+            const list = document.getElementById('fieldGroupsList');
+            
+            // Filter out the "ungrouped" placeholder
+            const groups = fieldGroups.filter(g => g.id !== null);
+            
+            if (groups.length === 0) {
+                list.innerHTML = '<p class="text-secondary">Нет групп полей</p>';
+                return;
+            }
+            
+            list.innerHTML = groups.map(g => `
+                <div class="card mb-2" style="padding: 0.75rem 1rem;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span>${escapeHtml(g.name)}</span>
+                            ${g.is_collapsed ? '<span class="text-secondary" style="font-size: 0.8rem;">(свёрнута)</span>' : ''}
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="deleteFieldGroup(${g.id})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    ${g.fields && g.fields.length > 0 ? `
+                        <div class="mt-2 text-secondary" style="font-size: 0.85rem;">
+                            Поля: ${g.fields.map(f => escapeHtml(f.name)).join(', ')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function populateFieldGroupSelect() {
+            const groups = fieldGroups.filter(g => g.id !== null);
+            const options = groups.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+            document.getElementById('newFieldGroup').innerHTML = '<option value="">Без группы</option>' + options;
+        }
+        
+        async function deleteFieldGroup(groupId) {
+            if (!confirm('Удалить группу? Поля будут перемещены в "Без группы"')) return;
+            try {
+                await api.deleteFieldGroup(projectId, groupId);
+                loadFieldGroups();
+                await loadProject();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        function renderFieldsList() {
+            const list = document.getElementById('fieldsList');
+            const fields = project.field_definitions || [];
+            
+            if (fields.length === 0) {
+                list.innerHTML = '<p class="text-secondary">Нет пользовательских полей</p>';
+                return;
+            }
+            
+            // Group fields by group_id
+            const groupedFields = {};
+            fields.forEach(f => {
+                const groupId = f.group_id || 'ungrouped';
+                if (!groupedFields[groupId]) groupedFields[groupId] = [];
+                groupedFields[groupId].push(f);
+            });
+            
+            let html = '';
+            
+            // Find group names
+            const groupNames = {};
+            fieldGroups.forEach(g => {
+                if (g.id) groupNames[g.id] = g.name;
+            });
+            
+            for (const [groupId, groupFields] of Object.entries(groupedFields)) {
+                const groupName = groupId === 'ungrouped' ? 'Без группы' : (groupNames[groupId] || 'Группа ' + groupId);
+                html += `<div class="mb-2 text-secondary" style="font-size: 0.85rem; margin-top: 1rem;">${escapeHtml(groupName)}</div>`;
+                
+                html += groupFields.map(field => `
+                    <div class="card mb-2 flex items-center justify-between" style="padding: 0.75rem 1rem;">
+                        <div>
+                            <span>${escapeHtml(field.name)}</span>
+                            <span class="text-secondary" style="margin-left: 0.5rem; font-size: 0.8rem;">(${field.field_type})</span>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="deleteField(${field.id})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            list.innerHTML = html;
+        }
+        
+        function renderPermissionsList(permissions) {
+            const list = document.getElementById('permissionsList');
+            
+            if (permissions.length === 0) {
+                list.innerHTML = '<p class="text-secondary">Нет назначенных прав</p>';
+                return;
+            }
+            
+            const permLabels = { read: 'Чтение', write: 'Запись' };
+            
+            list.innerHTML = permissions.map(p => `
+                <div class="card mb-2 flex items-center justify-between" style="padding: 0.75rem 1rem;">
+                    <div>
+                        <span>${escapeHtml(p.username)}</span>
+                        <span class="stage-badge" style="margin-left: 0.5rem;">${permLabels[p.permission_type]}</span>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="deletePermission(${p.id})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function renderCustomFields(prefix = 'Create', taskData = null, fieldPermissions = {}) {
+            const container = document.getElementById('customFields' + prefix);
+            const fields = project?.field_definitions || [];
+            
+            // Show/hide "no fields" message for Edit form
+            if (prefix === 'Edit') {
+                const noFieldsMsg = document.getElementById('noCustomFields');
+                if (noFieldsMsg) {
+                    noFieldsMsg.style.display = fields.length === 0 ? 'block' : 'none';
+                }
+            }
+            
+            if (fields.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // Group fields by group_id
+            const groupedFields = {};
+            fields.forEach(f => {
+                const groupId = f.group_id || 'ungrouped';
+                if (!groupedFields[groupId]) groupedFields[groupId] = [];
+                groupedFields[groupId].push(f);
+            });
+            
+            // Get group names
+            const groupNames = {};
+            const groupCollapsed = {};
+            fieldGroups.forEach(g => {
+                if (g.id) {
+                    groupNames[g.id] = g.name;
+                    groupCollapsed[g.id] = g.is_collapsed;
+                }
+            });
+            
+            let html = '';
+            
+            for (const [groupId, groupFields] of Object.entries(groupedFields)) {
+                const isGroup = groupId !== 'ungrouped';
+                const groupName = isGroup ? (groupNames[groupId] || 'Группа') : null;
+                const collapsed = isGroup && groupCollapsed[groupId];
+                
+                if (isGroup) {
+                    html += `
+                        <div class="field-group" style="margin-top: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;">
+                            <div class="field-group-header" style="background: var(--bg-tertiary); padding: 0.75rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" 
+                                 onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').style.transform = this.nextElementSibling.classList.contains('hidden') ? 'rotate(-90deg)' : ''">
+                                <span style="font-weight: 500;">${escapeHtml(groupName)}</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.2s; ${collapsed ? 'transform: rotate(-90deg);' : ''}">
+                                    <path d="M6 9l6 6 6-6"/>
+                                </svg>
+                            </div>
+                            <div class="field-group-content ${collapsed ? 'hidden' : ''}" style="padding: 1rem;">
+                    `;
+                }
+                
+                groupFields.forEach(field => {
+                    const fieldValue = taskData?.field_values?.find(fv => fv.field_definition_id === field.id)?.value || '';
+                    // Поле доступно только если явно указано fieldPermissions[field.id] === true
+                    // При создании задачи все поля доступны
+                    const canEdit = prefix === 'Create' || fieldPermissions[field.id] === true;
+                    const disabled = !canEdit ? 'disabled' : '';
+                    const readonly = !canEdit ? 'readonly' : '';
+                    const fieldReadonlyAttr = !canEdit ? 'data-field-readonly="true"' : '';
+                    let input = '';
+                    
+                    switch (field.field_type) {
+                        case 'text':
+                            input = `<input type="text" class="form-input" name="field_${field.id}" value="${escapeHtml(fieldValue || '')}" ${disabled} ${readonly} ${fieldReadonlyAttr} style="${!canEdit ? 'background: var(--bg-tertiary); cursor: not-allowed;' : ''}">`;
+                            break;
+                        case 'number':
+                            input = `<input type="number" class="form-input" name="field_${field.id}" value="${fieldValue || ''}" ${disabled} ${readonly} ${fieldReadonlyAttr} style="${!canEdit ? 'background: var(--bg-tertiary); cursor: not-allowed;' : ''}">`;
+                            break;
+                        case 'date':
+                            input = `<input type="date" class="form-input" name="field_${field.id}" value="${fieldValue || ''}" ${disabled} ${fieldReadonlyAttr} style="${!canEdit ? 'background: var(--bg-tertiary); cursor: not-allowed;' : ''}">`;
+                            break;
+                        case 'checkbox':
+                            input = `<input type="checkbox" name="field_${field.id}" ${fieldValue ? 'checked' : ''} ${disabled} ${fieldReadonlyAttr} style="width: 20px; height: 20px; ${!canEdit ? 'cursor: not-allowed; opacity: 0.6;' : ''}">`;
+                            break;
+                        case 'select':
+                            const options = field.options?.options || [];
+                            input = `<select class="form-select" name="field_${field.id}" ${disabled} ${fieldReadonlyAttr} style="${!canEdit ? 'background: var(--bg-tertiary); cursor: not-allowed;' : ''}">
+                                <option value="">-- Выберите --</option>
+                                ${options.map(o => `<option value="${escapeHtml(o)}" ${fieldValue === o ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+                            </select>`;
+                            break;
+                        default:
+                            input = `<input type="text" class="form-input" name="field_${field.id}" value="${escapeHtml(fieldValue || '')}" ${disabled} ${readonly} ${fieldReadonlyAttr} style="${!canEdit ? 'background: var(--bg-tertiary); cursor: not-allowed;' : ''}">`;
+                    }
+                    
+                    html += `
+                        <div class="form-group">
+                            <label class="form-label">
+                                ${escapeHtml(field.name)}${field.is_required ? ' *' : ''}
+                                ${!canEdit && prefix === 'Edit' ? '<span class="text-secondary" style="font-size: 0.75rem; margin-left: 0.5rem;">(только просмотр)</span>' : ''}
+                            </label>
+                            ${input}
+                        </div>
+                    `;
+                });
+                
+                if (isGroup) {
+                    html += `</div></div>`;
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function getCustomFieldValues(formId) {
+            const fields = project?.field_definitions || [];
+            const values = [];
+            
+            fields.forEach(field => {
+                const input = document.querySelector(`#${formId} [name="field_${field.id}"]`);
+                if (input) {
+                    let value;
+                    if (input.type === 'checkbox') {
+                        value = input.checked;
+                    } else {
+                        value = input.value;
+                    }
+                    if (value !== '' && value !== null) {
+                        values.push({
+                            field_definition_id: field.id,
+                            value: value
+                        });
+                    }
+                }
+            });
+            
+            return values;
+        }
+        
+        function onOnlyMineChange() {
+            // Save state to localStorage
+            const checkbox = document.getElementById('onlyMine');
+            if (checkbox && currentUser) {
+                localStorage.setItem(`onlyMine_${currentUser.id}`, checkbox.checked);
+            }
+            loadTasks();
+        }
+        
+        async function loadTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            const filters = {
+                stage_id: document.getElementById('stageFilter').value || undefined,
+                author_id: document.getElementById('authorFilter').value || undefined,
+                assignee_id: document.getElementById('assigneeFilter').value || undefined,
+                search: document.getElementById('searchInput').value || undefined,
+                sort_by: document.getElementById('sortBy').value,
+                sort_dir: document.getElementById('sortDir').value,
+                include_archived: document.getElementById('showArchived').checked || undefined
+            };
+            
+            // "Только мои" filter for executors
+            const onlyMineCheckbox = document.getElementById('onlyMine');
+            const onlyMine = onlyMineCheckbox && onlyMineCheckbox.checked;
+            
+            try {
+                let loadedTasks = await api.getTasks(projectId, filters);
+                
+                // Filter by "Только мои" - show only tasks where user is author or assignee
+                if (onlyMine && currentUser) {
+                    loadedTasks = loadedTasks.filter(task => 
+                        task.author_id === currentUser.id || task.assignee_id === currentUser.id
+                    );
+                }
+                
+                tasks = loadedTasks;
+                renderTasks();
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state"><p>${error.message}</p></div>`;
+            }
+        }
+        
+        async function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <h3>Нет задач</h3>
+                        <p>Создайте первую задачу</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Check if current user is regular user (user_type === 'user')
+            let isRegularUser = false;
+            try {
+                const currentUser = await api.getCurrentUser();
+                isRegularUser = currentUser.user_type === 'user' && !currentUser.is_admin;
+            } catch (e) {}
+            
+            const stages = project?.stages || [];
+            const stageMap = Object.fromEntries(stages.map(s => [s.id, s]));
+            
+            container.innerHTML = `
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Задача</th>
+                            <th>Этап</th>
+                            <th>Приоритет</th>
+                            ${!isRegularUser ? '<th>Автор</th>' : ''}
+                            <th>Исполнитель</th>
+                            <th>Создано</th>
+                            <th>Срок</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tasks.map(task => {
+                            const stage = stageMap[task.stage_id] || {};
+                            const assignee = task.assignee;
+                            const author = task.author;
+                            const isOverdue = task.is_overdue === true || isTaskOverdue(task);
+                            return `
+                                <tr onclick="openEditTask(${task.id})" class="${isOverdue ? 'task-row-overdue' : ''}" style="cursor: pointer; ${task.is_archived ? 'opacity: 0.6;' : ''}${isOverdue ? ' background: rgba(239, 68, 68, 0.2);' : ''}">
+                                    <td>
+                                        <span class="task-id-badge">#${task.id}</span>
+                                    </td>
+                                    <td>
+                                        <div class="task-title">
+                                            ${task.is_archived ? '<span class="archived-badge">Архив</span>' : ''}
+                                            ${escapeHtml(task.title)}
+                                        </div>
+                                        ${task.description ? `<div class="text-secondary" style="font-size: 0.85rem; margin-top: 0.25rem;">${escapeHtml(task.description.substring(0, 60))}${task.description.length > 60 ? '...' : ''}</div>` : ''}
+                                    </td>
+                                    <td>
+                                        <span class="stage-badge" style="background: ${stage.color}20; color: ${stage.color};">
+                                            ${escapeHtml(stage.name || 'N/A')}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="priority-badge priority-${task.priority}">${getPriorityLabel(task.priority)}</span>
+                                    </td>
+                                    ${!isRegularUser ? `
+                                    <td>
+                                        ${author ? `
+                                            <div class="task-assignee">
+                                                <div class="task-assignee-avatar">${getInitials(author.full_name || author.username)}</div>
+                                                ${escapeHtml(author.full_name || author.username)}
+                                            </div>
+                                        ` : '<span class="text-secondary">—</span>'}
+                                    </td>
+                                    ` : ''}
+                                    <td>
+                                        ${assignee ? `
+                                            <div class="task-assignee">
+                                                <div class="task-assignee-avatar">${getInitials(assignee.full_name || assignee.username)}</div>
+                                                ${escapeHtml(assignee.full_name || assignee.username)}
+                                            </div>
+                                        ` : '<span class="text-secondary">—</span>'}
+                                    </td>
+                                    <td style="white-space: nowrap;">${formatDate(task.created_at)}</td>
+                                    <td style="white-space: nowrap;">${formatDate(task.due_date)}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        let currentEditTaskId = null;
+        let chatPollInterval = null;
+        
+        // Close task modal and stop polling
+        function closeTaskModal() {
+            if (chatPollInterval) {
+                clearInterval(chatPollInterval);
+                chatPollInterval = null;
+            }
+            currentEditTaskId = null;
+            closeModal('editTaskModal');
+        }
+        
+        // Start chat polling
+        function startChatPolling(taskId) {
+            // Stop existing polling
+            if (chatPollInterval) {
+                clearInterval(chatPollInterval);
+            }
+            
+            // Poll every 5 seconds
+            chatPollInterval = setInterval(async () => {
+                // Only poll if chat tab is active and modal is open
+                const chatTab = document.getElementById('taskTabChat');
+                const modal = document.getElementById('editTaskModal');
+                if (chatTab && chatTab.classList.contains('active') && modal && modal.classList.contains('active')) {
+                    try {
+                        const comments = await api.getTaskComments(taskId);
+                        const container = document.getElementById('chatMessages');
+                        const currentCount = container.querySelectorAll('.chat-message').length;
+                        
+                        // Only update if new messages arrived
+                        if (comments.length !== currentCount) {
+                            // Update badge
+                            const badge = document.getElementById('chatBadge');
+                            if (comments.length > 0) {
+                                badge.textContent = comments.length;
+                                badge.style.display = 'inline-flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                            
+                            if (comments.length === 0) {
+                                container.innerHTML = `
+                                    <div class="chat-empty">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                        <p>Нет сообщений</p>
+                                        <span>Начните обсуждение задачи</span>
+                                    </div>
+                                `;
+                            } else {
+                                const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+                                container.innerHTML = comments.map(c => renderComment(c)).join('');
+                                // Scroll to bottom only if was already at bottom
+                                if (wasAtBottom) {
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Chat poll error:', error);
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Tab switching
+        function switchTaskTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.task-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            // Update tab content
+            document.getElementById('taskTabMain').classList.toggle('active', tabName === 'main');
+            document.getElementById('taskTabParams').classList.toggle('active', tabName === 'params');
+            document.getElementById('taskTabExtra').classList.toggle('active', tabName === 'extra');
+            document.getElementById('taskTabLinks').classList.toggle('active', tabName === 'links');
+            document.getElementById('taskTabChat').classList.toggle('active', tabName === 'chat');
+            document.getElementById('taskTabFiles').classList.toggle('active', tabName === 'files');
+            document.getElementById('taskTabHistory').classList.toggle('active', tabName === 'history');
+            
+            // Load data when switching tabs
+            if (tabName === 'history' && currentEditTaskId) {
+                loadTaskHistory(currentEditTaskId);
+            }
+            if (tabName === 'links' && currentEditTaskId) {
+                loadTaskLinks(currentEditTaskId);
+            }
+            if (tabName === 'chat' && currentEditTaskId) {
+                loadTaskComments(currentEditTaskId);
+            }
+            if (tabName === 'files' && currentEditTaskId) {
+                loadTaskAttachments(currentEditTaskId);
+            }
+        }
+        
+        // Chat functions
+        async function loadTaskComments(taskId) {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '<div class="text-center text-secondary py-4">Загрузка сообщений...</div>';
+            
+            try {
+                const comments = await api.getTaskComments(taskId);
+                
+                // Update badge
+                const badge = document.getElementById('chatBadge');
+                if (comments.length > 0) {
+                    badge.textContent = comments.length;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+                
+                if (comments.length === 0) {
+                    container.innerHTML = `
+                        <div class="chat-empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <p>Нет сообщений</p>
+                            <span>Начните обсуждение задачи</span>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = comments.map(c => renderComment(c)).join('');
+                
+                // Hide edit buttons if read-only
+                showEditButtonsIfAllowed();
+                
+                // Scroll to bottom
+                container.scrollTop = container.scrollHeight;
+            } catch (error) {
+                container.innerHTML = `<div class="text-center text-danger py-4">Ошибка: ${error.message}</div>`;
+            }
+        }
+        
+        function renderComment(c) {
+            const date = new Date(c.created_at);
+            const formattedDate = date.toLocaleDateString('ru-RU', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const formattedTime = date.toLocaleTimeString('ru-RU', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const initials = (c.user_full_name || c.user_name)
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+            
+            const authorName = c.user_full_name || c.user_name;
+            const isOwn = c.is_own;
+            const hasWriteAccess = !userProjectPermission || userProjectPermission === 'write';
+            
+            // Reply quote if exists
+            const replyHtml = c.reply_to_id && c.reply_to_text ? `
+                <div class="chat-reply-quote" onclick="scrollToComment(${c.reply_to_id})">
+                    <div class="chat-reply-author">${escapeHtml(c.reply_to_author || 'Пользователь')}</div>
+                    <div class="chat-reply-text">${escapeHtml(c.reply_to_text)}</div>
+                </div>
+            ` : '';
+            
+            // Parse message for images
+            const imageRegex = /\[image:(\d+):([^\]]+)\]/g;
+            const messageText = c.message || '';
+            let messageHtml = escapeHtml(messageText);
+            let match;
+            const images = [];
+            
+            while ((match = imageRegex.exec(messageText)) !== null) {
+                const attachmentId = match[1];
+                const fileName = match[2];
+                const imageUrl = api.getAttachmentViewUrl(attachmentId);
+                images.push({ id: attachmentId, url: imageUrl, name: fileName });
+                messageHtml = messageHtml.replace(escapeHtml(match[0]), '');
+            }
+            
+            messageHtml = messageHtml.trim().replace(/\n/g, '<br>');
+            
+            // Wrap emoji in span for larger display
+            messageHtml = messageHtml.replace(/([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1FA00}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{23E9}-\u{23F3}]|[\u{23F8}-\u{23FA}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B50}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{FE0F}]|[\u{200D}])+/gu, '<span class="emoji-large">$&</span>');
+            
+            const imagesHtml = images.map(img => {
+                const safeName = img.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return `<img src="${img.url}" alt="${escapeHtml(img.name)}" class="chat-message-image" onclick="viewImage(${img.id}, '${safeName}')" loading="lazy">`;
+            }).join('');
+            
+            return `
+                <div class="chat-message ${isOwn ? 'own' : ''}" data-comment-id="${c.id}" id="comment-${c.id}">
+                    <div class="chat-avatar ${isOwn ? 'own' : ''}">${initials}</div>
+                    <div class="chat-bubble">
+                        <div class="chat-header">
+                            <span class="chat-author">${escapeHtml(authorName)}</span>
+                            <span class="chat-time">${formattedDate} ${formattedTime}</span>
+                            ${c.is_edited ? '<span class="chat-edited">(изм.)</span>' : ''}
+                        </div>
+                        ${replyHtml}
+                        ${messageHtml ? `<div class="chat-text">${messageHtml}</div>` : ''}
+                        ${imagesHtml}
+                        <div class="chat-actions">
+                            ${hasWriteAccess ? `
+                            <button type="button" class="chat-action-btn" onclick="replyToComment(${c.id}, '${escapeHtml(authorName)}', ${JSON.stringify((c.message || '').substring(0, 50)).replace(/"/g, '&quot;')})" title="Ответить">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 14 4 9 9 4"/>
+                                    <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                                </svg>
+                            </button>
+                            ${isOwn ? `
+                                <button type="button" class="chat-action-btn" onclick="editComment(${c.id}, ${JSON.stringify(c.message || '').replace(/"/g, '&quot;')})" title="Редактировать">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="chat-action-btn" onclick="deleteComment(${c.id})" title="Удалить">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                    </svg>
+                                </button>
+                            ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let replyingToCommentId = null;
+        
+        function replyToComment(commentId, authorName, messagePreview) {
+            replyingToCommentId = commentId;
+            const preview = messagePreview.length > 50 ? messagePreview + '...' : messagePreview;
+            
+            // Show reply indicator
+            let replyIndicator = document.getElementById('replyIndicator');
+            if (!replyIndicator) {
+                const inputArea = document.querySelector('.chat-input-area');
+                replyIndicator = document.createElement('div');
+                replyIndicator.id = 'replyIndicator';
+                replyIndicator.className = 'reply-indicator';
+                inputArea.parentNode.insertBefore(replyIndicator, inputArea);
+            }
+            
+            replyIndicator.innerHTML = `
+                <div class="reply-indicator-content">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 14 4 9 9 4"/>
+                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                    </svg>
+                    <span>Ответ для <strong>${escapeHtml(authorName)}</strong>: ${escapeHtml(preview)}</span>
+                </div>
+                <button type="button" class="reply-cancel" onclick="cancelReply()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            `;
+            replyIndicator.style.display = 'flex';
+            
+            document.getElementById('chatInput').focus();
+        }
+        
+        function cancelReply() {
+            replyingToCommentId = null;
+            const replyIndicator = document.getElementById('replyIndicator');
+            if (replyIndicator) {
+                replyIndicator.style.display = 'none';
+            }
+        }
+        
+        function scrollToComment(commentId) {
+            const comment = document.getElementById(`comment-${commentId}`);
+            if (comment) {
+                comment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                comment.classList.add('highlight');
+                setTimeout(() => comment.classList.remove('highlight'), 2000);
+            }
+        }
+        
+        // Emoji Picker
+        const emojiCategories = {
+            'recent': [],
+            'smileys': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖'],
+            'gestures': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄'],
+            'people': ['👶', '👧', '🧒', '👦', '👩', '🧑', '👨', '👩‍🦱', '🧑‍🦱', '👨‍🦱', '👩‍🦰', '🧑‍🦰', '👨‍🦰', '👱‍♀️', '👱', '👱‍♂️', '👩‍🦳', '🧑‍🦳', '👨‍🦳', '👩‍🦲', '🧑‍🦲', '👨‍🦲', '🧔', '👵', '🧓', '👴', '👲', '👳‍♀️', '👳', '👳‍♂️', '🧕', '👮‍♀️', '👮', '👮‍♂️', '👷‍♀️', '👷', '👷‍♂️', '💂‍♀️', '💂', '💂‍♂️', '🕵️‍♀️', '🕵️', '🕵️‍♂️', '👩‍⚕️', '🧑‍⚕️', '👨‍⚕️', '👩‍🌾', '🧑‍🌾', '👨‍🌾', '👩‍🍳', '🧑‍🍳', '👨‍🍳', '👩‍💻', '🧑‍💻', '👨‍💻'],
+            'hearts': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥️', '💌', '💋', '😻', '😽', '😘', '🥰', '😍', '🤩', '😊', '☺️'],
+            'animals': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱', '🐛', '🦋', '🐌', '🐞', '🐜', '🪰', '🪲', '🪳', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🪶', '🐓', '🦃', '🦤', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦫', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔'],
+            'food': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊'],
+            'activities': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🤾', '🏌️', '🏇', '⛹️‍♂️', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚵', '🚴', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🪗', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩'],
+            'travel': ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🦯', '🦽', '🦼', '🛴', '🚲', '🛵', '🏍️', '🛺', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚀', '🛸', '🚁', '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🪝', '⛽', '🚧', '🚦', '🚥', '🚏', '🗺️', '🗿', '🗽', '🗼', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛲', '⛱️', '🏖️', '🏝️', '🏜️', '🌋', '⛰️', '🏔️', '🗻', '🏕️', '⛺', '🛖', '🏠', '🏡', '🏘️', '🏚️', '🏗️', '🏭', '🏢', '🏬', '🏣', '🏤', '🏥', '🏦', '🏨', '🏪', '🏫', '🏩', '💒', '🏛️', '⛪', '🕌', '🕍', '🛕', '🕋', '⛩️', '🛤️', '🛣️', '🗾', '🎑', '🏞️', '🌅', '🌄', '🌠', '🎇', '🎆', '🌇', '🌆', '🏙️', '🌃', '🌌', '🌉', '🌁'],
+            'objects': ['⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️', '🪜', '🧰', '🪛', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🪚', '🔩', '⚙️', '🪤', '🧱', '⛓️', '🧲', '🔫', '💣', '🧨', '🪓', '🔪', '🗡️', '⚔️', '🛡️', '🚬', '⚰️', '🪦', '⚱️', '🏺', '🔮', '📿', '🧿', '💈', '⚗️', '🔭', '🔬', '🕳️', '🩹', '🩺', '💊', '💉', '🩸', '🧬', '🦠', '🧫', '🧪', '🌡️', '🧹', '🪠', '🧺', '🧻', '🚽', '🚰', '🚿', '🛁', '🛀', '🧼', '🪥', '🪒', '🧽', '🪣', '🧴', '🛎️', '🔑', '🗝️', '🚪', '🪑', '🛋️', '🛏️', '🛌', '🧸', '🪆', '🖼️', '🪞', '🪟', '🛍️', '🛒', '🎁', '🎈', '🎏', '🎀', '🪄', '🎐', '🎎', '🏮', '🪔', '✉️', '📩', '📨', '📧', '💌', '📥', '📤', '📦', '🏷️', '🪧', '📪', '📫', '📬', '📭', '📮', '📯', '📜', '📃', '📄', '📑', '🧾', '📊', '📈', '📉', '🗒️', '🗓️', '📆', '📅', '🗑️', '📇', '🗃️', '🗳️', '🗄️', '📋', '📁', '📂', '🗂️', '🗞️', '📰', '📓', '📔', '📒', '📕', '📗', '📘', '📙', '📚', '📖', '🔖', '🧷', '🔗', '📎', '🖇️', '📐', '📏', '🧮', '📌', '📍', '✂️', '🖊️', '🖋️', '✒️', '🖌️', '🖍️', '📝', '✏️', '🔍', '🔎', '🔏', '🔐', '🔒', '🔓'],
+            'symbols': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️', '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭', '❗', '❕', '❓', '❔', '‼️', '⁉️', '🔅', '🔆', '〽️', '⚠️', '🚸', '🔱', '⚜️', '🔰', '♻️', '✅', '🈯', '💹', '❇️', '✳️', '❎', '🌐', '💠', 'Ⓜ️', '🌀', '💤', '🏧', '🚾', '♿', '🅿️', '🛗', '🈳', '🈂️', '🛂', '🛃', '🛄', '🛅', '🚹', '🚺', '🚼', '⚧️', '🚻', '🚮', '🎦', '📶', '🈁', '🔣', 'ℹ️', '🔤', '🔡', '🔠', '🆖', '🆗', '🆙', '🆒', '🆕', '🆓', '0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔢', '#️⃣', '*️⃣', '⏏️', '▶️', '⏸️', '⏯️', '⏹️', '⏺️', '⏭️', '⏮️', '⏩', '⏪', '⏫', '⏬', '◀️', '🔼', '🔽', '➡️', '⬅️', '⬆️', '⬇️', '↗️', '↘️', '↙️', '↖️', '↕️', '↔️', '↪️', '↩️', '⤴️', '⤵️', '🔀', '🔁', '🔂', '🔄', '🔃', '🎵', '🎶', '➕', '➖', '➗', '✖️', '🟰', '♾️', '💲', '💱', '™️', '©️', '®️', '👁️‍🗨️', '🔚', '🔙', '🔛', '🔝', '🔜', '〰️', '➰', '➿', '✔️', '☑️', '🔘', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪', '🟤', '🔺', '🔻', '🔸', '🔹', '🔶', '🔷', '🔳', '🔲', '▪️', '▫️', '◾', '◽', '◼️', '◻️', '🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '⬛', '⬜', '🟫', '🔈', '🔇', '🔉', '🔊', '🔔', '🔕', '📣', '📢', '💬', '💭', '🗯️', '♠️', '♣️', '♥️', '♦️', '🃏', '🎴', '🀄', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛', '🕜', '🕝', '🕞', '🕟', '🕠', '🕡', '🕢', '🕣', '🕤', '🕥', '🕦', '🕧'],
+            'flags': ['🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🏴‍☠️', '🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
+        };
+        
+        const categoryNames = {
+            'recent': '🕐 Недавние',
+            'smileys': '😀 Смайлики',
+            'gestures': '👋 Жесты',
+            'people': '👤 Люди',
+            'hearts': '❤️ Сердечки',
+            'animals': '🐱 Животные',
+            'food': '🍔 Еда',
+            'activities': '⚽ Активности',
+            'travel': '✈️ Путешествия',
+            'objects': '💡 Объекты',
+            'symbols': '✅ Символы',
+            'flags': '🏳️ Флаги'
+        };
+        
+        let currentEmojiCategory = 'smileys';
+        
+        // Load recent emojis from localStorage
+        function loadRecentEmojis() {
+            try {
+                const saved = localStorage.getItem('recentEmojis');
+                if (saved) {
+                    emojiCategories.recent = JSON.parse(saved).slice(0, 32);
+                }
+            } catch (e) {}
+        }
+        
+        function saveRecentEmoji(emoji) {
+            try {
+                let recent = emojiCategories.recent.filter(e => e !== emoji);
+                recent.unshift(emoji);
+                recent = recent.slice(0, 32);
+                emojiCategories.recent = recent;
+                localStorage.setItem('recentEmojis', JSON.stringify(recent));
+            } catch (e) {}
+        }
+        
+        function toggleEmojiPicker(event) {
+            if (event) event.stopPropagation();
+            const picker = document.getElementById('emojiPicker');
+            if (picker.style.display === 'none') {
+                loadRecentEmojis();
+                if (emojiCategories.recent.length > 0) {
+                    currentEmojiCategory = 'recent';
+                }
+                renderEmojiPicker();
+                picker.style.display = 'block';
+            } else {
+                picker.style.display = 'none';
+            }
+        }
+        
+        function renderEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            const categories = Object.keys(emojiCategories).filter(cat => cat !== 'recent' || emojiCategories.recent.length > 0);
+            
+            picker.innerHTML = `
+                <div class="emoji-picker-header">
+                    ${categories.map(cat => `
+                        <button type="button" class="emoji-category-btn ${cat === currentEmojiCategory ? 'active' : ''}" 
+                                onclick="event.stopPropagation(); switchEmojiCategory('${cat}')" title="${categoryNames[cat]}">${categoryNames[cat].split(' ')[0]}</button>
+                    `).join('')}
+                </div>
+                <div class="emoji-picker-title">${categoryNames[currentEmojiCategory]}</div>
+                <div class="emoji-grid">
+                    ${emojiCategories[currentEmojiCategory].map(emoji => `
+                        <button type="button" class="emoji-btn" onclick="event.stopPropagation(); insertEmoji('${emoji}')">${emoji}</button>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function switchEmojiCategory(category) {
+            currentEmojiCategory = category;
+            renderEmojiPicker();
+        }
+        
+        function insertEmoji(emoji) {
+            const input = document.getElementById('chatInput');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            input.value = text.substring(0, start) + emoji + text.substring(end);
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+            input.focus();
+            saveRecentEmoji(emoji);
+        }
+        
+        // Chat Image Upload
+        async function uploadChatImage(fileInput) {
+            const file = fileInput.files[0];
+            if (!file || !currentEditTaskId) return;
+            
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                showAlert('Можно загружать только изображения');
+                return;
+            }
+            
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('Максимальный размер изображения 10 МБ');
+                return;
+            }
+            
+            try {
+                // Upload as attachment first
+                const attachment = await api.uploadAttachment(currentEditTaskId, file);
+                
+                // Send comment with image reference
+                const imageUrl = api.getAttachmentViewUrl(attachment.id);
+                const message = `[image:${attachment.id}:${file.name}]`;
+                
+                await api.createComment(currentEditTaskId, message, replyingToCommentId);
+                cancelReply();
+                await loadTaskComments(currentEditTaskId);
+            } catch (error) {
+                showAlert(error.message);
+            }
+            
+            fileInput.value = '';
+        }
+        
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', function(e) {
+            const picker = document.getElementById('emojiPicker');
+            const emojiBtn = e.target.closest('.chat-action-btn');
+            if (picker && picker.style.display !== 'none' && !picker.contains(e.target) && !emojiBtn) {
+                picker.style.display = 'none';
+            }
+        });
+        
+        async function sendComment() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentEditTaskId) return;
+            
+            try {
+                input.disabled = true;
+                await api.createComment(currentEditTaskId, message, replyingToCommentId);
+                input.value = '';
+                input.style.height = 'auto';
+                cancelReply();
+                await loadTaskComments(currentEditTaskId);
+            } catch (error) {
+                showAlert(error.message);
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+        
+        async function editComment(commentId, currentMessage) {
+            const newMessage = prompt('Редактировать сообщение:', currentMessage);
+            if (newMessage === null || newMessage.trim() === '' || newMessage === currentMessage) return;
+            
+            try {
+                await api.updateComment(currentEditTaskId, commentId, newMessage.trim());
+                await loadTaskComments(currentEditTaskId);
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deleteComment(commentId) {
+            if (!confirm('Удалить сообщение?')) return;
+            
+            try {
+                await api.deleteComment(currentEditTaskId, commentId);
+                await loadTaskComments(currentEditTaskId);
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function loadTaskHistory(taskId) {
+            const container = document.getElementById('taskHistoryList');
+            container.innerHTML = '<div class="text-center text-secondary py-4">Загрузка истории...</div>';
+            
+            try {
+                const history = await api.getTaskHistory(taskId);
+                
+                if (history.length === 0) {
+                    container.innerHTML = `
+                        <div class="history-empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <p>История изменений пуста</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = history.map(h => {
+                    const date = new Date(h.created_at);
+                    const formattedDate = date.toLocaleDateString('ru-RU', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                    });
+                    const formattedTime = date.toLocaleTimeString('ru-RU', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    const iconClass = h.action;
+                    let icon = '';
+                    switch(h.action) {
+                        case 'created':
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+                            break;
+                        case 'stage_changed':
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                            break;
+                        case 'attachment_added':
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
+                            break;
+                        case 'attachment_deleted':
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+                            break;
+                        case 'comment_added':
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+                            break;
+                        default:
+                            icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+                    }
+                    
+                    return `
+                        <div class="history-item">
+                            <div class="history-icon ${iconClass}">
+                                ${icon}
+                            </div>
+                            <div class="history-content">
+                                <div class="history-description">${escapeHtml(h.description)}</div>
+                                <div class="history-meta">
+                                    <span>${h.user_full_name || h.user_name}</span>
+                                    <span>${formattedDate} ${formattedTime}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="text-center text-danger py-4">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+        
+        // Task Links functions
+        const LINK_TYPE_NAMES = {
+            'blocks': 'Блокирует',
+            'blocked_by': 'Заблокирована',
+            'relates': 'Связана с',
+            'duplicates': 'Дублирует',
+            'duplicated_by': 'Дублируется',
+            'parent': 'Родительская для',
+            'child': 'Дочерняя от'
+        };
+        
+        let selectedLinkTaskId = null;
+        
+        async function loadTaskLinks(taskId) {
+            const container = document.getElementById('taskLinksList');
+            container.innerHTML = '<div class="text-center text-secondary py-4">Загрузка связей...</div>';
+            
+            // Show add button if user has write access
+            const hasWriteAccess = !userProjectPermission || userProjectPermission === 'write';
+            const addLinkBtn = document.getElementById('showAddLinkBtn');
+            if (addLinkBtn) {
+                addLinkBtn.style.display = hasWriteAccess ? '' : 'none';
+            }
+            
+            try {
+                const links = await api.getTaskLinks(taskId);
+                const allLinks = [...links.outgoing, ...links.incoming];
+                
+                // Update badge
+                const badge = document.getElementById('linksBadge');
+                if (allLinks.length > 0) {
+                    badge.textContent = allLinks.length;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+                
+                if (allLinks.length === 0) {
+                    container.innerHTML = `
+                        <div class="links-empty" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <p style="margin: 0;">Нет связанных задач</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = allLinks.map(link => {
+                    const task = link.linked_task;
+                    const typeName = LINK_TYPE_NAMES[link.link_type] || link.link_type;
+                    
+                    const priorityLabels = ['Низкий', 'Обычный', 'Высокий', 'Критичный'];
+                    const priorityColors = ['#6b7280', '#3b82f6', '#f59e0b', '#ef4444'];
+                    
+                    return `
+                        <div class="link-item" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <span class="link-type-badge" style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: var(--accent-primary); color: white; border-radius: 4px;">${typeName}</span>
+                                    <span style="color: var(--text-secondary); font-size: 0.85rem;">#${task.id}</span>
+                                </div>
+                                <a href="javascript:void(0)" onclick="openLinkedTask(${task.id}, ${task.project_id})" style="color: var(--text-primary); text-decoration: none; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${escapeHtml(task.title)}
+                                </a>
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                    <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${task.stage_color || '#6366f1'};"></span>
+                                        ${escapeHtml(task.stage_name || 'Неизвестно')}
+                                    </span>
+                                    <span style="color: ${priorityColors[task.priority]};">${priorityLabels[task.priority]}</span>
+                                    ${task.is_archived ? '<span style="color: var(--danger);">В архиве</span>' : ''}
+                                </div>
+                            </div>
+                            ${hasWriteAccess ? `
+                                <button type="button" class="btn-icon" onclick="deleteTaskLink(${link.id})" title="Удалить связь" style="color: var(--danger); opacity: 0.7;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="text-center text-danger py-4">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+        
+        function openLinkedTask(taskId, taskProjectId) {
+            if (taskProjectId == projectId) {
+                // Same project - just open the task
+                closeTaskModal();
+                setTimeout(() => openEditTask(taskId), 300);
+            } else {
+                // Different project - navigate to it
+                window.location.href = `/project/${taskProjectId}?task=${taskId}`;
+            }
+        }
+        
+        function showLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'block';
+            document.getElementById('showAddLinkBtn').style.display = 'none';
+            document.getElementById('linkTaskSearch').value = '';
+            document.getElementById('linkTaskResults').innerHTML = '';
+            selectedLinkTaskId = null;
+        }
+        
+        function hideLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'none';
+            const hasWriteAccess = !userProjectPermission || userProjectPermission === 'write';
+            document.getElementById('showAddLinkBtn').style.display = hasWriteAccess ? '' : 'none';
+            selectedLinkTaskId = null;
+        }
+        
+        // Search tasks for linking
+        let linkSearchTimeout = null;
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('linkTaskSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(linkSearchTimeout);
+                    linkSearchTimeout = setTimeout(() => searchTasksForLink(this.value), 300);
+                });
+            }
+        });
+        
+        async function searchTasksForLink(query) {
+            const container = document.getElementById('linkTaskResults');
+            if (!query || query.length < 2) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            try {
+                // Search by ID if query starts with #
+                let tasks;
+                if (query.startsWith('#')) {
+                    const taskId = parseInt(query.slice(1));
+                    if (taskId) {
+                        const task = await api.getTask(taskId);
+                        tasks = task ? [task] : [];
+                    } else {
+                        tasks = [];
+                    }
+                } else {
+                    // Search by title in current project
+                    tasks = await api.getTasks(projectId, { search: query, limit: 10 });
+                }
+                
+                // Filter out current task
+                tasks = tasks.filter(t => t.id !== currentEditTaskId);
+                
+                if (tasks.length === 0) {
+                    container.innerHTML = '<div class="text-secondary" style="padding: 0.5rem;">Задачи не найдены</div>';
+                    return;
+                }
+                
+                container.innerHTML = tasks.map(task => `
+                    <div class="link-search-result ${selectedLinkTaskId === task.id ? 'selected' : ''}" 
+                         onclick="selectTaskForLink(${task.id}, '${escapeHtml(task.title).replace(/'/g, "\\'")}', ${task.project_id})"
+                         style="padding: 0.5rem; cursor: pointer; border-radius: var(--radius-sm); ${selectedLinkTaskId === task.id ? 'background: var(--accent-primary); color: white;' : ''}"
+                         onmouseover="this.style.background = this.classList.contains('selected') ? 'var(--accent-primary)' : 'var(--bg-secondary)'"
+                         onmouseout="this.style.background = this.classList.contains('selected') ? 'var(--accent-primary)' : ''">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: ${selectedLinkTaskId === task.id ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)'}; font-size: 0.85rem;">#${task.id}</span>
+                            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(task.title)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="text-danger" style="padding: 0.5rem;">Ошибка: ${error.message}</div>`;
+            }
+        }
+        
+        function selectTaskForLink(taskId, taskTitle, taskProjectId) {
+            selectedLinkTaskId = taskId;
+            document.getElementById('linkTaskSearch').value = `#${taskId} ${taskTitle}`;
+            document.getElementById('linkTaskResults').innerHTML = '';
+        }
+        
+        async function addTaskLink() {
+            if (!selectedLinkTaskId) {
+                showAlert('Выберите задачу для связывания');
+                return;
+            }
+            
+            const linkType = document.getElementById('linkType').value;
+            
+            try {
+                await api.createTaskLink({
+                    source_task_id: currentEditTaskId,
+                    target_task_id: selectedLinkTaskId,
+                    link_type: linkType
+                });
+                
+                hideLinkForm();
+                loadTaskLinks(currentEditTaskId);
+                showAlert('Связь добавлена', 'success');
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deleteTaskLink(linkId) {
+            try {
+                await api.deleteTaskLink(linkId);
+                loadTaskLinks(currentEditTaskId);
+                showAlert('Связь удалена', 'success');
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function createLinkedTask() {
+            // Get link type for the new task
+            const linkType = document.getElementById('linkType').value;
+            
+            // Store source task ID as integer before closing modal
+            const sourceId = parseInt(currentEditTaskId);
+            if (!sourceId || isNaN(sourceId)) {
+                showAlert('Ошибка: не удалось определить ID текущей задачи');
+                return;
+            }
+            
+            // Close current task modal
+            closeTaskModal();
+            
+            // Store link info for after task creation
+            window.pendingLinkInfo = {
+                sourceTaskId: sourceId,
+                linkType: linkType
+            };
+            
+            // Open create task modal
+            setTimeout(() => {
+                openModal('createTaskModal');
+            }, 300);
+        }
+        
+        function openTaskLinksMap() {
+            // Open links map for current task
+            window.location.href = `/links/${currentEditTaskId}?from=project`;
+        }
+        
+        function createSubtask() {
+            // Store parent task info for linking after creation
+            const parentTaskId = currentEditTaskId;
+            window.pendingLinkInfo = {
+                sourceTaskId: null, // Will be set to new task ID
+                targetTaskId: parseInt(parentTaskId),
+                linkType: 'child'
+            };
+            
+            // Close edit modal and open create modal
+            closeTaskModal();
+            setTimeout(() => {
+                openModal('createTaskModal');
+            }, 300);
+        }
+        
+        async function openEditTask(taskId) {
+            try {
+                currentEditTaskId = taskId;
+                const task = await api.getTask(taskId);
+                
+                // Update modal title with task ID
+                document.getElementById('editTaskIdLabel').textContent = '#' + task.id;
+                
+                // Reset to main tab
+                switchTaskTab('main');
+                
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('editTaskTitle').value = task.title;
+                document.getElementById('editTaskDescription').value = task.description || '';
+                document.getElementById('editTaskAssignee').value = task.assignee_id || '';
+                document.getElementById('editTaskPriority').value = task.priority;
+                document.getElementById('editTaskDueDate').value = task.due_date ? task.due_date.split('T')[0] : '';
+                
+                // Display author and created date
+                const authorName = task.author ? (task.author.full_name || task.author.username) : '—';
+                document.getElementById('editTaskAuthor').textContent = authorName;
+                document.getElementById('editTaskCreatedAt').textContent = formatDateTime(task.created_at);
+                
+                // Load field permissions for this task
+                let fieldPermissions = {};
+                try {
+                    fieldPermissions = await api.checkFieldPermissions(taskId);
+                } catch (error) {
+                    console.error('Failed to load field permissions:', error);
+                }
+                
+                // Update archive button text
+                const archiveBtn = document.getElementById('archiveTaskBtn');
+                archiveBtn.textContent = task.is_archived ? 'Из архива' : 'В архив';
+                
+                // Load allowed transitions and populate stage select
+                await populateEditStageSelect(task.stage_id);
+                
+                // Regular users cannot change stage
+                try {
+                    const currentUser = await api.getCurrentUser();
+                    if (currentUser.user_type === 'user' && !currentUser.is_admin) {
+                        const editStage = document.getElementById('editTaskStage');
+                        if (editStage) {
+                            editStage.disabled = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to check user type for stage edit:', error);
+                }
+                
+                // Load attachments
+                await loadTaskAttachments(taskId);
+                
+                renderCustomFields('Edit', task, fieldPermissions);
+                
+                openModal('editTaskModal');
+                
+                // Hide edit buttons if read-only (after loading comments and attachments)
+                setTimeout(() => hideEditButtonsIfReadOnly(), 100);
+                
+                // Start polling for new chat messages
+                startChatPolling(taskId);
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function populateEditStageSelect(currentStageId) {
+            const select = document.getElementById('editTaskStage');
+            const stages = project.stages || [];
+            const currentStage = stages.find(s => s.id === currentStageId);
+            
+            try {
+                // Get allowed transitions from current stage
+                const response = await api.getAllowedTransitions(projectId, currentStageId);
+                const allowedStages = response.stages;
+                const transitionsConfigured = response.configured;
+                
+                // Build options: current stage + allowed transitions
+                let options = `<option value="${currentStageId}">${escapeHtml(currentStage?.name || 'Текущий')} (текущий)</option>`;
+                
+                if (transitionsConfigured) {
+                    // Transitions are configured - only show allowed
+                    if (allowedStages.length > 0) {
+                        options += '<optgroup label="Разрешённые переходы">';
+                        options += allowedStages.map(s => 
+                            `<option value="${s.id}">${escapeHtml(s.name)}${s.transition_name ? ` → ${escapeHtml(s.transition_name)}` : ''}</option>`
+                        ).join('');
+                        options += '</optgroup>';
+                    }
+                } else {
+                    // No transitions configured - show all stages
+                    const otherStages = stages.filter(s => s.id !== currentStageId);
+                    if (otherStages.length > 0) {
+                        options += '<optgroup label="Другие этапы">';
+                        options += otherStages.map(s => 
+                            `<option value="${s.id}">${escapeHtml(s.name)}</option>`
+                        ).join('');
+                        options += '</optgroup>';
+                    }
+                }
+                
+                select.innerHTML = options;
+                select.value = currentStageId;
+            } catch (error) {
+                // Fallback to all stages
+                select.innerHTML = stages.map(s => 
+                    `<option value="${s.id}">${escapeHtml(s.name)}</option>`
+                ).join('');
+                select.value = currentStageId;
+            }
+        }
+        
+        async function toggleArchiveTask() {
+            const taskId = document.getElementById('editTaskId').value;
+            const task = await api.getTask(taskId);
+            const newState = !task.is_archived;
+            
+            try {
+                await api.updateTask(taskId, { is_archived: newState });
+                closeTaskModal();
+                loadTasks();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deleteCurrentTask() {
+            const taskId = document.getElementById('editTaskId').value;
+            if (!confirm('Удалить задачу?')) return;
+            
+            try {
+                await api.deleteTask(taskId);
+                closeTaskModal();
+                loadTasks();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deleteStage(stageId) {
+            if (!confirm('Удалить этап?')) return;
+            
+            try {
+                await api.deleteStage(projectId, stageId);
+                await loadProject();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deleteField(fieldId) {
+            if (!confirm('Удалить поле?')) return;
+            
+            try {
+                await api.deleteField(projectId, fieldId);
+                await loadProject();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        async function deletePermission(permissionId) {
+            if (!confirm('Удалить права?')) return;
+            
+            try {
+                await api.deleteProjectPermission(projectId, permissionId);
+                loadPermissions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        // Attachments functions
+        async function loadTaskAttachments(taskId) {
+            const container = document.getElementById('taskAttachments');
+            container.innerHTML = '<div class="text-secondary">Загрузка...</div>';
+            
+            try {
+                const attachments = await api.getTaskAttachments(taskId);
+                renderAttachments(attachments);
+            } catch (error) {
+                container.innerHTML = '<div class="text-secondary">Ошибка загрузки файлов</div>';
+            }
+        }
+        
+        function renderAttachments(attachments) {
+            const container = document.getElementById('taskAttachments');
+            
+            // Update badge
+            const badge = document.getElementById('filesBadge');
+            if (attachments.length > 0) {
+                badge.textContent = attachments.length;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            if (attachments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4" style="grid-column: 1 / -1;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem; opacity: 0.3;">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                        <p class="text-secondary">Нет прикреплённых файлов</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = attachments.map(att => `
+                <div class="file-card">
+                    <div class="file-preview">
+                        ${att.is_image ? `
+                            <img src="${api.getAttachmentViewUrl(att.id)}" 
+                                 alt="${escapeHtml(att.filename)}"
+                                 onclick="viewImage(${att.id}, '${escapeHtml(att.filename)}')">
+                        ` : `
+                            <div class="file-preview-icon">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                                </svg>
+                            </div>
+                        `}
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name" title="${escapeHtml(att.filename)}">${escapeHtml(att.filename)}</div>
+                        <div class="file-meta">${formatFileSize(att.file_size)} • ${att.uploader_name}</div>
+                    </div>
+                    <div class="file-actions">
+                        ${att.is_image ? `
+                            <button class="btn btn-secondary btn-sm" onclick="viewImage(${att.id}, '${escapeHtml(att.filename)}')" title="Просмотр">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                        <a href="${api.getAttachmentDownloadUrl(att.id)}" class="btn btn-secondary btn-sm" title="Скачать" target="_blank">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                            </svg>
+                        </a>
+                        ${(!userProjectPermission || userProjectPermission === 'write') ? `
+                        <button class="btn btn-ghost btn-sm" onclick="deleteAttachment(${att.id})" title="Удалить" style="color: var(--danger);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Hide edit buttons if read-only
+            showEditButtonsIfAllowed();
+        }
+        
+        async function deleteAttachment(attachmentId) {
+            if (!confirm('Удалить файл?')) return;
+            
+            try {
+                await api.deleteAttachment(attachmentId);
+                if (currentEditTaskId) {
+                    loadTaskAttachments(currentEditTaskId);
+                }
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        function viewImage(attachmentId, filename) {
+            const img = document.getElementById('imageViewerImg');
+            const caption = document.getElementById('imageViewerCaption');
+            
+            // Show loading state
+            caption.textContent = 'Загрузка...';
+            img.style.display = 'none';
+            openModal('imageViewerModal');
+            
+            // Set up image load handlers
+            img.onload = function() {
+                img.style.display = 'block';
+                caption.textContent = filename;
+            };
+            
+            img.onerror = function() {
+                caption.textContent = 'Ошибка загрузки изображения: ' + filename;
+                img.style.display = 'none';
+            };
+            
+            // Set image source
+            img.src = api.getAttachmentViewUrl(attachmentId);
+        }
+        
+        // File upload handler
+        document.getElementById('attachmentInput').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files.length || !currentEditTaskId) return;
+            
+            const progress = document.getElementById('uploadProgress');
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                progress.textContent = `Загрузка ${i + 1}/${files.length}: ${file.name}...`;
+                
+                try {
+                    await api.uploadAttachment(currentEditTaskId, file);
+                } catch (error) {
+                    showAlert(`Ошибка загрузки ${file.name}: ${error.message}`);
+                }
+            }
+            
+            progress.textContent = '';
+            e.target.value = '';
+            loadTaskAttachments(currentEditTaskId);
+        });
+        
+        function parseDateParts(dateStr) {
+            if (!dateStr) return null;
+            const text = String(dateStr);
+            const match = text.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (!match) return null;
+            const year = Number(match[1]);
+            const month = Number(match[2]);
+            const day = Number(match[3]);
+            if (!year || !month || !day) return null;
+            return { year, month, day };
+        }
+        
+        function isTaskOverdue(task) {
+            const parts = parseDateParts(task.due_date);
+            if (!parts) return false;
+            const dueDay = new Date(parts.year, parts.month - 1, parts.day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return dueDay < today;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Event listeners
+        document.getElementById('createTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get stage - use first stage if field is hidden (for regular users)
+            let stageId = document.getElementById('taskStage').value;
+            if (!stageId && project && project.stages && project.stages.length > 0) {
+                const firstStage = project.stages.find(s => s.is_initial) || project.stages[0];
+                if (firstStage) {
+                    stageId = firstStage.id;
+                }
+            }
+            
+            // Get assignee only if field is visible
+            let assigneeId = null;
+            const assigneeGroup = document.getElementById('taskAssigneeGroup');
+            if (assigneeGroup && assigneeGroup.style.display !== 'none') {
+                assigneeId = document.getElementById('taskAssignee').value ? parseInt(document.getElementById('taskAssignee').value) : null;
+            }
+            
+            // Get custom field values only if custom fields container is visible
+            let fieldValues = [];
+            const customFieldsContainer = document.getElementById('customFieldsCreate');
+            if (customFieldsContainer && customFieldsContainer.style.display !== 'none') {
+                fieldValues = getCustomFieldValues('createTaskForm');
+            }
+            
+            const data = {
+                project_id: parseInt(projectId),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value || null,
+                stage_id: parseInt(stageId),
+                assignee_id: assigneeId,
+                priority: parseInt(document.getElementById('taskPriority').value),
+                due_date: document.getElementById('taskDueDate').value || null,
+                field_values: fieldValues
+            };
+            
+            try {
+                const newTask = await api.createTask(data);
+                closeModal('createTaskModal');
+                e.target.reset();
+                
+                // If there's pending link info, create the link
+                if (window.pendingLinkInfo && newTask && newTask.id) {
+                    let sourceId, targetId;
+                    
+                    // Handle both cases: creating linked task (sourceTaskId set) or subtask (targetTaskId set)
+                    if (window.pendingLinkInfo.targetTaskId) {
+                        // Subtask case: new task is child of existing task
+                        sourceId = Number(newTask.id);
+                        targetId = Number(window.pendingLinkInfo.targetTaskId);
+                    } else {
+                        // Linked task case: existing task links to new task
+                        sourceId = Number(window.pendingLinkInfo.sourceTaskId);
+                        targetId = Number(newTask.id);
+                    }
+                    
+                    console.log('Link info:', { sourceId, targetId, pendingInfo: window.pendingLinkInfo });
+                    
+                    if (!isNaN(sourceId) && !isNaN(targetId) && sourceId > 0 && targetId > 0) {
+                        try {
+                            const linkData = {
+                                source_task_id: sourceId,
+                                target_task_id: targetId,
+                                link_type: window.pendingLinkInfo.linkType || 'relates'
+                            };
+                            console.log('Creating link with data:', linkData);
+                            await api.createTaskLink(linkData);
+                            showAlert('Задача создана и связана', 'success');
+                        } catch (linkError) {
+                            console.error('Link creation error:', linkError);
+                            showAlert('Задача создана, но связь не удалось установить: ' + linkError.message);
+                        }
+                    } else {
+                        console.error('Invalid IDs for link:', { sourceId, targetId });
+                        showAlert('Задача создана, но связь не удалось установить: неверные ID');
+                    }
+                    window.pendingLinkInfo = null;
+                }
+                
+                loadTasks();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        document.getElementById('editTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const taskId = document.getElementById('editTaskId').value;
+            const data = {
+                title: document.getElementById('editTaskTitle').value,
+                description: document.getElementById('editTaskDescription').value || null,
+                stage_id: parseInt(document.getElementById('editTaskStage').value),
+                assignee_id: document.getElementById('editTaskAssignee').value ? parseInt(document.getElementById('editTaskAssignee').value) : null,
+                priority: parseInt(document.getElementById('editTaskPriority').value),
+                due_date: document.getElementById('editTaskDueDate').value || null,
+                field_values: getCustomFieldValues('editTaskForm')
+            };
+            
+            try {
+                await api.updateTask(taskId, data);
+                closeTaskModal();
+                loadTasks();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        document.getElementById('addStageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('newStageName').value;
+            const color = document.getElementById('newStageColor').value;
+            const order = (project.stages?.length || 0);
+            
+            try {
+                await api.createStage(projectId, { name, color, order });
+                document.getElementById('newStageName').value = '';
+                await loadProject();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        document.getElementById('addFieldForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('newFieldName').value;
+            const fieldType = document.getElementById('newFieldType').value;
+            const optionsStr = document.getElementById('newFieldOptions').value;
+            const groupId = document.getElementById('newFieldGroup').value || null;
+            
+            let options = null;
+            if (fieldType === 'select' && optionsStr) {
+                options = { options: optionsStr.split(',').map(o => o.trim()) };
+            }
+            
+            try {
+                await api.createField(projectId, { 
+                    name, 
+                    field_type: fieldType, 
+                    options, 
+                    order: 0,
+                    group_id: groupId ? parseInt(groupId) : null
+                });
+                document.getElementById('newFieldName').value = '';
+                document.getElementById('newFieldOptions').value = '';
+                await loadProject();
+                loadFieldGroups();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        // Transitions form
+        document.getElementById('addTransitionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fromStageId = parseInt(document.getElementById('transitionFrom').value);
+            const toStageId = parseInt(document.getElementById('transitionTo').value);
+            const name = document.getElementById('transitionName').value || null;
+            
+            if (!fromStageId || !toStageId) {
+                showAlert('Выберите оба этапа');
+                return;
+            }
+            
+            if (fromStageId === toStageId) {
+                showAlert('Этапы должны быть разными');
+                return;
+            }
+            
+            try {
+                await api.createTransition(projectId, {
+                    from_stage_id: fromStageId,
+                    to_stage_id: toStageId,
+                    name: name
+                });
+                document.getElementById('transitionFrom').value = '';
+                document.getElementById('transitionTo').value = '';
+                document.getElementById('transitionName').value = '';
+                loadTransitions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        // Field Groups form
+        document.getElementById('addFieldGroupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('newGroupName').value;
+            const isCollapsed = document.getElementById('newGroupCollapsed').checked;
+            const order = fieldGroups.filter(g => g.id !== null).length;
+            
+            try {
+                await api.createFieldGroup(projectId, {
+                    name,
+                    order,
+                    is_collapsed: isCollapsed
+                });
+                document.getElementById('newGroupName').value = '';
+                document.getElementById('newGroupCollapsed').checked = false;
+                loadFieldGroups();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        document.getElementById('addPermissionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = parseInt(document.getElementById('permissionUser').value);
+            const permissionType = document.getElementById('permissionType').value;
+            
+            try {
+                await api.addProjectPermission(projectId, { user_id: userId, permission_type: permissionType });
+                loadPermissions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        // Field Permissions
+        let fieldPermissions = [];
+        let roles = [];
+        
+        async function loadRoles() {
+            try {
+                roles = await api.getRoles();
+                populateFieldPermissionRoleSelects();
+            } catch (error) {
+                console.error('Failed to load roles:', error);
+            }
+        }
+        
+        function populateFieldPermissionRoleSelects() {
+            const filterSelect = document.getElementById('fieldPermissionRole');
+            const newSelect = document.getElementById('newFieldPermissionRole');
+            
+            if (!roles || roles.length === 0) return;
+            
+            const options = roles.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
+            
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">Все роли</option>' + options;
+            }
+            if (newSelect) {
+                newSelect.innerHTML = '<option value="">Все роли</option>' + options;
+            }
+        }
+        
+        async function loadFieldPermissions() {
+            const list = document.getElementById('fieldPermissionsList');
+            if (!list) return;
+            
+            list.innerHTML = '<div class="text-center text-secondary py-4">Загрузка...</div>';
+            
+            const fieldId = document.getElementById('fieldPermissionField')?.value || null;
+            const stageId = document.getElementById('fieldPermissionStage')?.value || null;
+            const roleId = document.getElementById('fieldPermissionRole')?.value || null;
+            
+            try {
+                fieldPermissions = await api.getFieldPermissions(
+                    projectId,
+                    fieldId ? parseInt(fieldId) : null,
+                    stageId ? parseInt(stageId) : null,
+                    roleId ? parseInt(roleId) : null
+                );
+                renderFieldPermissionsList();
+            } catch (error) {
+                console.error('Failed to load field permissions:', error);
+                list.innerHTML = '<div class="text-center text-secondary py-4">Ошибка загрузки: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+        
+        function renderFieldPermissionsList() {
+            const list = document.getElementById('fieldPermissionsList');
+            if (!list) return;
+            
+            if (fieldPermissions.length === 0) {
+                list.innerHTML = '<p class="text-secondary">Нет правил доступа</p>';
+                return;
+            }
+            
+            list.innerHTML = fieldPermissions.map(perm => `
+                <div class="card mb-2" style="padding: 0.75rem 1rem;">
+                    <div class="flex items-center justify-between" style="gap: 1rem;">
+                        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <div><strong>${escapeHtml(perm.field_definition?.name || 'Неизвестное поле')}</strong></div>
+                            <div class="text-secondary" style="font-size: 0.875rem;">
+                                Этап: ${perm.stage ? escapeHtml(perm.stage.name) : 'Все этапы'}
+                            </div>
+                            <div class="text-secondary" style="font-size: 0.875rem;">
+                                Роль: ${perm.role ? escapeHtml(perm.role.name) : 'Все роли'}
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="deleteFieldPermission(${perm.id})" style="flex-shrink: 0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function populateFieldPermissionSelects() {
+            if (!project) return;
+            
+            // Populate field select
+            const fields = project?.field_definitions || [];
+            const fieldOptions = fields.map(f => 
+                `<option value="${f.id}">${escapeHtml(f.name)}</option>`
+            ).join('');
+            
+            const filterFieldSelect = document.getElementById('fieldPermissionField');
+            const newFieldSelect = document.getElementById('newFieldPermissionField');
+            
+            if (filterFieldSelect) {
+                filterFieldSelect.innerHTML = '<option value="">Все поля</option>' + fieldOptions;
+            }
+            if (newFieldSelect) {
+                newFieldSelect.innerHTML = '<option value="">Выберите поле</option>' + fieldOptions;
+            }
+            
+            // Populate stage select
+            const stages = project?.stages || [];
+            const stageOptions = stages.map(s => 
+                `<option value="${s.id}">${escapeHtml(s.name)}</option>`
+            ).join('');
+            
+            const filterStageSelect = document.getElementById('fieldPermissionStage');
+            const newStageSelect = document.getElementById('newFieldPermissionStage');
+            
+            if (filterStageSelect) {
+                filterStageSelect.innerHTML = '<option value="">Все этапы</option>' + stageOptions;
+            }
+            if (newStageSelect) {
+                newStageSelect.innerHTML = '<option value="">Все этапы</option>' + stageOptions;
+            }
+        }
+        
+        async function deleteFieldPermission(permissionId) {
+            if (!confirm('Удалить правило доступа?')) return;
+            try {
+                await api.deleteFieldPermission(permissionId);
+                loadFieldPermissions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+        
+        // Field permission filters
+        document.getElementById('fieldPermissionField')?.addEventListener('change', loadFieldPermissions);
+        document.getElementById('fieldPermissionStage')?.addEventListener('change', loadFieldPermissions);
+        document.getElementById('fieldPermissionRole')?.addEventListener('change', loadFieldPermissions);
+        
+        // Field permission form
+        document.getElementById('addFieldPermissionForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fieldId = parseInt(document.getElementById('newFieldPermissionField').value);
+            const stageIdValue = document.getElementById('newFieldPermissionStage').value;
+            const stageId = stageIdValue ? parseInt(stageIdValue) : null;
+            const roleIdValue = document.getElementById('newFieldPermissionRole').value;
+            const roleId = roleIdValue ? parseInt(roleIdValue) : null;
+            
+            if (!fieldId) {
+                showAlert('Выберите поле');
+                return;
+            }
+            
+            try {
+                await api.createFieldPermission({
+                    field_definition_id: fieldId,
+                    stage_id: stageId,
+                    role_id: roleId
+                });
+                document.getElementById('addFieldPermissionForm').reset();
+                // Восстанавливаем опции "Все этапы" и "Все роли" после сброса
+                const newStageSelect = document.getElementById('newFieldPermissionStage');
+                if (newStageSelect && newStageSelect.options.length > 0) {
+                    newStageSelect.selectedIndex = 0;
+                }
+                const newRoleSelect = document.getElementById('newFieldPermissionRole');
+                if (newRoleSelect && newRoleSelect.options.length > 0) {
+                    newRoleSelect.selectedIndex = 0;
+                }
+                loadFieldPermissions();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        });
+        
+        // Filters
+        ['stageFilter', 'authorFilter', 'assigneeFilter', 'sortBy', 'sortDir'].forEach(id => {
+            document.getElementById(id).addEventListener('change', loadTasks);
+        });
+        
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadTasks, 300);
+        });
+        
+        // Chat input handlers
+        const chatInput = document.getElementById('chatInput');
+        
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Send on Enter (Shift+Enter for new line)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendComment();
+            }
+        });
+        
+        // Show users link for admins
+        async function initNav() {
+            try {
+                const user = await api.getCurrentUser();
+                if (user.is_admin) {
+                    const usersLink = document.getElementById('usersNavLink');
+                    if (usersLink) usersLink.style.display = '';
+                    const settingsLink = document.getElementById('settingsNavLink');
+                    if (settingsLink) settingsLink.style.display = '';
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+            }
+        }
+        
+        // Add event listeners for modals to hide buttons when opened
+        document.addEventListener('DOMContentLoaded', () => {
+            const createTaskModal = document.getElementById('createTaskModal');
+            if (createTaskModal) {
+                createTaskModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'createTaskModal' || e.target.closest('.modal')) {
+                        setTimeout(() => showEditButtonsIfAllowed(), 100);
+                    }
+                });
+            }
+            
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal) {
+                settingsModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'settingsModal' || e.target.closest('.modal')) {
+                        setTimeout(() => showEditButtonsIfAllowed(), 100);
+                    }
+                });
+            }
+        });
+        
+        // Override openModal to hide buttons for read-only users and fields for regular users
+        const originalOpenModal = window.openModal;
+        window.openModal = async function(modalId) {
+            // Block access to settings modal for regular users (user_type === 'user')
+            if (modalId === 'settingsModal') {
+                try {
+                    const currentUser = await api.getCurrentUser();
+                    if (currentUser.user_type === 'user' && !currentUser.is_admin) {
+                        showAlert('У вас нет доступа к настройкам проекта');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Failed to check user access:', error);
+                    return;
+                }
+            }
+            
+            originalOpenModal(modalId);
+            if (modalId === 'createTaskModal' || modalId === 'editTaskModal' || modalId === 'settingsModal') {
+                setTimeout(() => showEditButtonsIfAllowed(), 100);
+            }
+            
+            // Hide stage and assignee fields for regular users (user_type === 'user') when creating task
+            if (modalId === 'createTaskModal') {
+                try {
+                    const currentUser = await api.getCurrentUser();
+                    const stageGroup = document.getElementById('taskStageGroup');
+                    const assigneeGroup = document.getElementById('taskAssigneeGroup');
+                    
+                    if ((currentUser.user_type === 'user' || currentUser.user_type === 'developer') && !currentUser.is_admin) {
+                        // Hide stage and assignee fields for regular users and executors
+                        if (stageGroup) {
+                            stageGroup.style.display = 'none';
+                        }
+                        if (assigneeGroup) {
+                            assigneeGroup.style.display = 'none';
+                        }
+                        
+                        // Hide custom fields for regular users and executors
+                        const customFieldsContainer = document.getElementById('customFieldsCreate');
+                        if (customFieldsContainer) {
+                            customFieldsContainer.style.display = 'none';
+                        }
+                        
+                        // Set first stage automatically
+                        if (project && project.stages && project.stages.length > 0) {
+                            const firstStage = project.stages.find(s => s.is_initial) || project.stages[0];
+                            if (firstStage) {
+                                document.getElementById('taskStage').value = firstStage.id;
+                            }
+                        }
+                    } else {
+                        // Show fields for other users
+                        if (stageGroup) {
+                            stageGroup.style.display = '';
+                        }
+                        if (assigneeGroup) {
+                            assigneeGroup.style.display = '';
+                        }
+                        
+                        // Show custom fields for other users
+                        const customFieldsContainer = document.getElementById('customFieldsCreate');
+                        if (customFieldsContainer) {
+                            customFieldsContainer.style.display = '';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load user info:', error);
+                }
+            }
+        };
+        
+        // Auto-refresh tasks every 10 seconds (if no modal is open)
+        let autoRefreshInterval = null;
+        
+        function startAutoRefresh() {
+            if (autoRefreshInterval) return;
+            autoRefreshInterval = setInterval(() => {
+                // Don't refresh if any modal is open
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (!activeModal) {
+                    loadTasks();
+                }
+            }, 10000); // 10 seconds
+        }
+        
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+        
+        // Initialize
+        initNav();
+        Promise.all([loadProject(), loadUsers()]).then(async () => {
+            await loadPermissions(); // Load permissions first (sets currentUser and "Только мои" checkbox)
+            loadTasks(); // Then load tasks with correct filter
+            loadTransitions();
+            loadFieldGroups();
+            loadRoles();
+            populateFieldPermissionSelects();
+            
+            // Start auto-refresh
+            startAutoRefresh();
+            
+            // Check URL for task parameter to open edit modal
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskIdParam = urlParams.get('task');
+            if (taskIdParam) {
+                // Clear the URL parameter without reload
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Open the task edit modal
+                await openEditTask(parseInt(taskIdParam));
+            }
+        });
+        
+        // Stop refresh when page is hidden, resume when visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>
+

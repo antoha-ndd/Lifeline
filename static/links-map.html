@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта связей - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .links-map-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 64px);
+            overflow: hidden;
+        }
+        
+        .links-map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .links-map-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .links-map-title h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .links-map-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .links-map-canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+        
+        #graphCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        #graphCanvas:active {
+            cursor: grabbing;
+        }
+        
+        .graph-node {
+            position: absolute;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            user-select: none;
+            max-width: 200px;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        
+        .graph-node:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+        
+        .graph-node.selected {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+            z-index: 50;
+        }
+        
+        .graph-node.root {
+            border-color: #10b981;
+            border-width: 3px;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 50;
+        }
+        
+        @keyframes pulse-root {
+            0% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(0,0,0,0.2); }
+            100% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+        }
+        
+        .graph-node.root {
+            animation: pulse-root 2s ease-in-out infinite;
+        }
+        
+        .graph-node.dragging {
+            z-index: 1000;
+            opacity: 0.9;
+        }
+        
+        .graph-node-id {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .graph-node-title {
+            font-weight: 500;
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .graph-node-stage {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-top: 0.375rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .graph-node-stage-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .graph-node.archived {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+        
+        .graph-edge {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .graph-edge line {
+            stroke: var(--border-color);
+            stroke-width: 2;
+        }
+        
+        .graph-edge.blocks line {
+            stroke: #ef4444;
+            stroke-dasharray: 5,5;
+        }
+        
+        .graph-edge.parent line,
+        .graph-edge.child line {
+            stroke: #10b981;
+        }
+        
+        .graph-edge.duplicates line,
+        .graph-edge.duplicated_by line {
+            stroke: #f59e0b;
+            stroke-dasharray: 3,3;
+        }
+        
+        .graph-edge marker {
+            fill: var(--border-color);
+        }
+        
+        .graph-edge.blocks marker {
+            fill: #ef4444;
+        }
+        
+        .graph-edge.parent marker,
+        .graph-edge.child marker {
+            fill: #10b981;
+        }
+        
+        .graph-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+        
+        .graph-legend h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.85rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.375rem;
+        }
+        
+        .legend-line {
+            width: 24px;
+            height: 2px;
+        }
+        
+        .legend-line.relates { background: var(--border-color); }
+        .legend-line.blocks { background: #ef4444; background: repeating-linear-gradient(90deg, #ef4444, #ef4444 5px, transparent 5px, transparent 10px); }
+        .legend-line.parent { background: #10b981; }
+        .legend-line.duplicates { background: #f59e0b; background: repeating-linear-gradient(90deg, #f59e0b, #f59e0b 3px, transparent 3px, transparent 6px); }
+        
+        .graph-minimap {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 200px;
+            height: 150px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid var(--accent-primary);
+            background: rgba(124, 58, 237, 0.1);
+            pointer-events: none;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+        
+        .zoom-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+        }
+        
+        .empty-graph {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .empty-graph svg {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-graph p {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .empty-graph span {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="/" class="brand-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span>Lifeline</span>
+            </a>
+        </div>
+        <div class="navbar-menu">
+            <a href="/" class="navbar-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Главная
+            </a>
+        </div>
+        <div class="navbar-user">
+            <button class="btn-icon" id="themeToggle" title="Переключить тему" onclick="toggleTheme()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            </button>
+            <div class="user-menu">
+                <button class="user-menu-btn" id="userMenuBtn">
+                    <span class="user-avatar" id="userAvatar">U</span>
+                    <span class="user-name" id="userName">User</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="links-map-container">
+        <div class="links-map-header">
+            <div class="links-map-title">
+                <a id="backLink" href="#" class="btn btn-secondary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Назад
+                </a>
+                <h1>Связи задачи #<span id="taskIdLabel">...</span> — <span id="projectName">Загрузка...</span></h1>
+            </div>
+            <div class="links-map-controls">
+                <label class="flex items-center gap-2" style="font-size: 0.9rem;">
+                    <input type="checkbox" id="showArchived" onchange="loadGraph()">
+                    Показать архивные
+                </label>
+                <button class="btn btn-secondary btn-sm" onclick="resetView()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
+                    Сбросить вид
+                </button>
+                <a id="kanbanLink" href="#" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="18" rx="1"/>
+                        <rect x="14" y="3" width="7" height="12" rx="1"/>
+                    </svg>
+                    Канбан
+                </a>
+            </div>
+        </div>
+        
+        <div class="links-map-canvas" id="graphContainer">
+            <svg id="edgesSvg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="var(--border-color)"/>
+                    </marker>
+                    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
+                    </marker>
+                    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+                    </marker>
+                    <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+                    </marker>
+                </defs>
+            </svg>
+            <div id="nodesContainer"></div>
+            
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()" title="Приблизить">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                </button>
+                <button class="zoom-btn" onclick="zoomOut()" title="Отдалить">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                </button>
+                <button class="zoom-btn" onclick="fitToScreen()" title="Вписать в экран">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                        <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                        <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                        <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="graph-legend">
+                <h4>Типы связей</h4>
+                <div class="legend-item">
+                    <div class="legend-line relates"></div>
+                    <span>Связана с</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line blocks"></div>
+                    <span>Блокирует</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line parent"></div>
+                    <span>Родитель/Потомок</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line duplicates"></div>
+                    <span>Дубликат</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        // Task ID from URL path: /links/{taskId}
+        const taskId = parseInt(window.location.pathname.split('/').pop());
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromPage = urlParams.get('from') || 'kanban';
+        
+        let projectId = null; // Will be set from API response
+        let graphData = { nodes: [], edges: [] };
+        let nodePositions = {};
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let draggedNode = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartY = 0;
+        
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadGraph(); // loadGraph will also load project info
+        });
+        
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const user = await api.getCurrentUser();
+                auth.setUser(user);
+                document.getElementById('userName').textContent = user.full_name || user.username;
+                document.getElementById('userAvatar').textContent = (user.full_name || user.username).charAt(0).toUpperCase();
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                // Only logout on 401 Unauthorized
+                if (error.message && error.message.includes('401')) {
+                    auth.logout();
+                }
+            }
+        }
+        
+        // Load project info (called after graph is loaded)
+        async function loadProjectInfo() {
+            if (!projectId) return;
+            
+            try {
+                const project = await api.getProject(projectId);
+                document.getElementById('projectName').textContent = project.name;
+                
+                // Set back link based on where we came from
+                const backUrl = fromPage === 'project' 
+                    ? `/project/${projectId}?task=${taskId}`
+                    : `/kanban/${projectId}?task=${taskId}`;
+                document.getElementById('backLink').href = backUrl;
+                document.getElementById('kanbanLink').href = `/kanban/${projectId}`;
+            } catch (error) {
+                document.getElementById('projectName').textContent = 'Ошибка загрузки';
+            }
+        }
+        
+        // Load graph data
+        async function loadGraph() {
+            const includeArchived = document.getElementById('showArchived').checked;
+            const container = document.getElementById('nodesContainer');
+            
+            try {
+                graphData = await api.getTaskLinksChain(taskId, includeArchived);
+                projectId = graphData.project_id;
+                
+                // Update task ID in header
+                document.getElementById('taskIdLabel').textContent = taskId;
+                
+                // Load project info now that we have project_id
+                loadProjectInfo();
+                
+                if (graphData.nodes.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-graph">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <p>Нет связанных задач</p>
+                            <span>Создайте связи между задачами, чтобы увидеть их здесь</span>
+                        </div>
+                    `;
+                    document.getElementById('edgesSvg').innerHTML = '';
+                    return;
+                }
+                
+                // Calculate initial positions using force-directed layout
+                calculatePositions();
+                
+                // Render
+                renderGraph();
+                
+                // Center on root task (the task we opened from)
+                if (nodePositions[taskId]) {
+                    setTimeout(() => centerOnTask(taskId), 100);
+                } else {
+                    setTimeout(fitToScreen, 100);
+                }
+                
+            } catch (error) {
+                container.innerHTML = `<div class="empty-graph"><p>Ошибка загрузки: ${error.message}</p></div>`;
+            }
+        }
+        
+        // Tree layout - positions nodes hierarchically from root task
+        function calculatePositions() {
+            const nodes = graphData.nodes;
+            const edges = graphData.edges;
+            const width = document.getElementById('graphContainer').clientWidth;
+            const height = document.getElementById('graphContainer').clientHeight;
+            
+            // Build adjacency list (bidirectional for traversal)
+            const adjacency = {};
+            nodes.forEach(n => adjacency[n.id] = []);
+            
+            edges.forEach(edge => {
+                adjacency[edge.source].push(edge.target);
+                adjacency[edge.target].push(edge.source);
+            });
+            
+            // BFS to assign levels starting from root task
+            const levels = {};
+            const visited = new Set();
+            const queue = [{ id: taskId, level: 0 }];
+            visited.add(taskId);
+            levels[taskId] = 0;
+            
+            while (queue.length > 0) {
+                const { id, level } = queue.shift();
+                
+                adjacency[id].forEach(neighborId => {
+                    if (!visited.has(neighborId)) {
+                        visited.add(neighborId);
+                        levels[neighborId] = level + 1;
+                        queue.push({ id: neighborId, level: level + 1 });
+                    }
+                });
+            }
+            
+            // Handle any disconnected nodes (shouldn't happen but just in case)
+            nodes.forEach(n => {
+                if (levels[n.id] === undefined) {
+                    levels[n.id] = 0;
+                }
+            });
+            
+            // Group nodes by level
+            const nodesByLevel = {};
+            nodes.forEach(n => {
+                const level = levels[n.id];
+                if (!nodesByLevel[level]) nodesByLevel[level] = [];
+                nodesByLevel[level].push(n);
+            });
+            
+            // Sort levels
+            const levelKeys = Object.keys(nodesByLevel).map(Number).sort((a, b) => a - b);
+            const maxLevel = levelKeys.length > 0 ? levelKeys[levelKeys.length - 1] : 0;
+            
+            // Calculate positions
+            const nodeWidth = 180;
+            const nodeHeight = 80;
+            const levelSpacingY = 150; // Vertical spacing between levels
+            const nodeSpacingX = 50;   // Horizontal spacing between nodes
+            
+            // Calculate total height needed
+            const totalHeight = (maxLevel + 1) * levelSpacingY;
+            const startY = Math.max(100, (height - totalHeight) / 2);
+            
+            levelKeys.forEach(level => {
+                const nodesAtLevel = nodesByLevel[level];
+                const totalWidth = nodesAtLevel.length * nodeWidth + (nodesAtLevel.length - 1) * nodeSpacingX;
+                const startX = (width - totalWidth) / 2 + nodeWidth / 2;
+                
+                nodesAtLevel.forEach((node, index) => {
+                    nodePositions[node.id] = {
+                        x: startX + index * (nodeWidth + nodeSpacingX),
+                        y: startY + level * levelSpacingY
+                    };
+                });
+            });
+        }
+        
+        // Render graph
+        function renderGraph() {
+            const nodesContainer = document.getElementById('nodesContainer');
+            const edgesSvg = document.getElementById('edgesSvg');
+            
+            // Clear
+            nodesContainer.innerHTML = '';
+            
+            // Render edges first (so they're behind nodes)
+            let edgesHtml = `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="var(--border-color)"/>
+                    </marker>
+                    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
+                    </marker>
+                    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+                    </marker>
+                    <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+                    </marker>
+                </defs>
+            `;
+            
+            graphData.edges.forEach(edge => {
+                const sourcePos = nodePositions[edge.source];
+                const targetPos = nodePositions[edge.target];
+                if (!sourcePos || !targetPos) return;
+                
+                const x1 = sourcePos.x * scale + panX;
+                const y1 = sourcePos.y * scale + panY;
+                const x2 = targetPos.x * scale + panX;
+                const y2 = targetPos.y * scale + panY;
+                
+                // Calculate offset for arrow to end at node border
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const offsetX = (dx / dist) * 60 * scale;
+                const offsetY = (dy / dist) * 40 * scale;
+                
+                let strokeClass = edge.type;
+                let markerEnd = 'url(#arrowhead)';
+                let strokeDash = '';
+                let strokeColor = 'var(--border-color)';
+                
+                if (edge.type === 'blocks' || edge.type === 'blocked_by') {
+                    markerEnd = 'url(#arrowhead-red)';
+                    strokeDash = '5,5';
+                    strokeColor = '#ef4444';
+                } else if (edge.type === 'parent' || edge.type === 'child') {
+                    markerEnd = 'url(#arrowhead-green)';
+                    strokeColor = '#10b981';
+                } else if (edge.type === 'duplicates' || edge.type === 'duplicated_by') {
+                    markerEnd = 'url(#arrowhead-yellow)';
+                    strokeDash = '3,3';
+                    strokeColor = '#f59e0b';
+                }
+                
+                edgesHtml += `
+                    <line 
+                        x1="${x1 + offsetX/2}" 
+                        y1="${y1 + offsetY/2}" 
+                        x2="${x2 - offsetX}" 
+                        y2="${y2 - offsetY}"
+                        stroke="${strokeColor}"
+                        stroke-width="2"
+                        stroke-dasharray="${strokeDash}"
+                        marker-end="${markerEnd}"
+                    />
+                `;
+            });
+            
+            edgesSvg.innerHTML = edgesHtml;
+            
+            // Render nodes
+            graphData.nodes.forEach(node => {
+                const pos = nodePositions[node.id];
+                if (!pos) return;
+                
+                const x = pos.x * scale + panX - 60 * scale;
+                const y = pos.y * scale + panY - 30 * scale;
+                
+                const nodeEl = document.createElement('div');
+                const isRoot = node.is_root || node.id === taskId;
+                nodeEl.className = `graph-node ${node.is_archived ? 'archived' : ''} ${isRoot ? 'root' : ''}`;
+                nodeEl.style.left = `${x}px`;
+                nodeEl.style.top = `${y}px`;
+                nodeEl.style.transform = `scale(${scale})`;
+                nodeEl.style.transformOrigin = 'top left';
+                nodeEl.dataset.nodeId = node.id;
+                
+                nodeEl.innerHTML = `
+                    <div class="graph-node-id">#${node.id}</div>
+                    <div class="graph-node-title" title="${escapeHtml(node.title)}">${escapeHtml(node.title)}</div>
+                    <div class="graph-node-stage">
+                        <span class="graph-node-stage-dot" style="background: ${node.stage_color}"></span>
+                        ${escapeHtml(node.stage_name || 'Неизвестно')}
+                    </div>
+                `;
+                
+                // Double click to open task
+                nodeEl.addEventListener('dblclick', () => {
+                    const baseUrl = fromPage === 'project' ? `/project/${projectId}` : `/kanban/${projectId}`;
+                    window.location.href = `${baseUrl}?task=${node.id}`;
+                });
+                
+                // Drag handling
+                nodeEl.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    draggedNode = node.id;
+                    dragStartX = e.clientX - pos.x * scale;
+                    dragStartY = e.clientY - pos.y * scale;
+                    nodeEl.classList.add('dragging');
+                });
+                
+                nodesContainer.appendChild(nodeEl);
+            });
+        }
+        
+        // Pan & zoom handling
+        const container = document.getElementById('graphContainer');
+        
+        container.addEventListener('mousedown', (e) => {
+            if (e.target === container || e.target.id === 'edgesSvg' || e.target.id === 'nodesContainer') {
+                isPanning = true;
+                panStartX = e.clientX - panX;
+                panStartY = e.clientY - panY;
+                container.style.cursor = 'grabbing';
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (draggedNode) {
+                const node = graphData.nodes.find(n => n.id === draggedNode);
+                if (node) {
+                    nodePositions[draggedNode].x = (e.clientX - dragStartX) / scale;
+                    nodePositions[draggedNode].y = (e.clientY - dragStartY) / scale;
+                    renderGraph();
+                }
+            } else if (isPanning) {
+                panX = e.clientX - panStartX;
+                panY = e.clientY - panStartY;
+                renderGraph();
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (draggedNode) {
+                const nodeEl = document.querySelector(`[data-node-id="${draggedNode}"]`);
+                if (nodeEl) nodeEl.classList.remove('dragging');
+                draggedNode = null;
+            }
+            isPanning = false;
+            container.style.cursor = 'grab';
+        });
+        
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.3, Math.min(3, scale * delta));
+            
+            // Zoom towards mouse position
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            panX = mouseX - (mouseX - panX) * (newScale / scale);
+            panY = mouseY - (mouseY - panY) * (newScale / scale);
+            
+            scale = newScale;
+            renderGraph();
+        });
+        
+        function zoomIn() {
+            scale = Math.min(3, scale * 1.2);
+            renderGraph();
+        }
+        
+        function zoomOut() {
+            scale = Math.max(0.3, scale / 1.2);
+            renderGraph();
+        }
+        
+        function fitToScreen() {
+            if (graphData.nodes.length === 0) return;
+            
+            const container = document.getElementById('graphContainer');
+            const padding = 100;
+            
+            // Find bounds
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            
+            graphData.nodes.forEach(node => {
+                const pos = nodePositions[node.id];
+                if (pos) {
+                    minX = Math.min(minX, pos.x);
+                    maxX = Math.max(maxX, pos.x);
+                    minY = Math.min(minY, pos.y);
+                    maxY = Math.max(maxY, pos.y);
+                }
+            });
+            
+            const graphWidth = maxX - minX + 200;
+            const graphHeight = maxY - minY + 100;
+            
+            const containerWidth = container.clientWidth - padding * 2;
+            const containerHeight = container.clientHeight - padding * 2;
+            
+            scale = Math.min(
+                containerWidth / graphWidth,
+                containerHeight / graphHeight,
+                1.5
+            );
+            
+            panX = (container.clientWidth - graphWidth * scale) / 2 - minX * scale + 100;
+            panY = (container.clientHeight - graphHeight * scale) / 2 - minY * scale + 50;
+            
+            renderGraph();
+        }
+        
+        function centerOnTask(taskId) {
+            const pos = nodePositions[taskId];
+            if (!pos) return;
+            
+            const container = document.getElementById('graphContainer');
+            
+            // Set zoom level for good visibility
+            scale = 1.2;
+            
+            // Center on the task
+            panX = container.clientWidth / 2 - pos.x * scale;
+            panY = container.clientHeight / 2 - pos.y * scale;
+            
+            renderGraph();
+            
+            // Highlight the focused node
+            setTimeout(() => {
+                const nodeEl = document.querySelector(`[data-node-id="${taskId}"]`);
+                if (nodeEl) {
+                    nodeEl.classList.add('selected');
+                    // Animate pulse effect
+                    nodeEl.style.animation = 'pulse 1s ease-out';
+                }
+            }, 50);
+        }
+        
+        function resetView() {
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            calculatePositions();
+            renderGraph();
+            setTimeout(fitToScreen, 100);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('theme-light') ? 'light' : 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            themeManager.apply(newTheme);
+            api.updateUserTheme(newTheme);
+        }
+        
+    </script>
+</body>
+</html>
+

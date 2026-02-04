@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки приложения - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/projects" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span class="gradient-text">Lifeline</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/projects" class="nav-link">Проекты</a>
+                <a href="/users" class="nav-link" id="usersNavLink" style="display: none;">Пользователи</a>
+                <a href="/settings" class="nav-link active" id="settingsNavLink" style="display: none;">Настройки</a>
+            </div>
+            <div class="user-menu"></div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="page-header">
+            <h1>Настройки приложения</h1>
+            <p class="text-secondary" style="margin-top: 0.5rem;">Доступно только администраторам</p>
+        </div>
+        
+        <div class="card">
+            <h2 style="margin-bottom: 1rem;">Telegram бот</h2>
+            <form id="telegramSettingsForm">
+                <div class="form-group">
+                    <label class="form-label" for="telegramBotToken">Bot Token</label>
+                    <input type="password" id="telegramBotToken" class="form-input" placeholder="123456:ABC-DEF...">
+                    <small class="text-secondary">Токен хранится в настройках приложения и используется для рассылки.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="telegramTestChatId">Telegram Chat ID (число)</label>
+                    <input type="text" id="telegramTestChatId" class="form-input" placeholder="123456789">
+                    <small class="text-secondary">Chat ID для рассылки уведомлений и тестовой отправки.</small>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" id="testTelegramBtn" style="margin-left: 0.5rem;">
+                        Проверить бота
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2 style="margin-bottom: 1rem;">Заявки из Telegram</h2>
+            <p class="text-secondary" style="margin-bottom: 1rem;">
+                Настройте проект и этап, в которые будут создаваться заявки, поступающие через Telegram бот.
+                Запуск бота: <code>python telegram_bot.py</code>
+            </p>
+            <form id="telegramTasksForm">
+                <div class="form-group">
+                    <label class="form-label" for="telegramDefaultProject">Проект по умолчанию</label>
+                    <select id="telegramDefaultProject" class="form-input" onchange="loadStagesForProject()">
+                        <option value="">-- Выберите проект --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="telegramDefaultStage">Этап по умолчанию</label>
+                    <select id="telegramDefaultStage" class="form-input">
+                        <option value="">-- Сначала выберите проект --</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">Сохранить настройки заявок</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        let projects = [];
+        let currentSettings = {};
+        
+        if (typeof api !== 'undefined') {
+            if (!api.getTelegramBotSettings) {
+                api.getTelegramBotSettings = () => apiRequest('/settings/telegram-bot');
+            }
+            if (!api.updateTelegramBotSettings) {
+                api.updateTelegramBotSettings = (data) => apiRequest('/settings/telegram-bot', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+            }
+            if (!api.testTelegramBot) {
+                api.testTelegramBot = () => apiRequest('/settings/telegram-bot/test', {
+                    method: 'POST'
+                });
+            }
+        }
+
+        async function init() {
+            if (!checkAuth()) return;
+            
+            try {
+                const user = await api.getCurrentUser();
+                auth.setUser(user);
+                
+                if (!user.is_admin && user.user_type !== 'admin') {
+                    showAlert('Доступ только для администраторов', 'error');
+                    window.location.href = '/projects';
+                    return;
+                }
+                
+                const usersLink = document.getElementById('usersNavLink');
+                const settingsLink = document.getElementById('settingsNavLink');
+                if (usersLink) usersLink.style.display = '';
+                if (settingsLink) settingsLink.style.display = '';
+                
+                // Загрузить проекты
+                projects = await api.getProjects();
+                const projectSelect = document.getElementById('telegramDefaultProject');
+                projectSelect.innerHTML = '<option value="">-- Выберите проект --</option>';
+                projects.forEach(p => {
+                    projectSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                });
+                
+                // Загрузить настройки
+                currentSettings = await api.getTelegramBotSettings();
+                document.getElementById('telegramBotToken').value = currentSettings.telegram_bot_token || '';
+                document.getElementById('telegramTestChatId').value = currentSettings.telegram_test_chat_id || '';
+                
+                // Установить проект
+                if (currentSettings.telegram_default_project_id) {
+                    projectSelect.value = currentSettings.telegram_default_project_id;
+                    await loadStagesForProject();
+                    // Установить этап
+                    if (currentSettings.telegram_default_stage_id) {
+                        document.getElementById('telegramDefaultStage').value = currentSettings.telegram_default_stage_id;
+                    }
+                }
+            } catch (error) {
+                showAlert('Ошибка загрузки настроек: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadStagesForProject() {
+            const projectId = document.getElementById('telegramDefaultProject').value;
+            const stageSelect = document.getElementById('telegramDefaultStage');
+            
+            if (!projectId) {
+                stageSelect.innerHTML = '<option value="">-- Сначала выберите проект --</option>';
+                return;
+            }
+            
+            try {
+                const project = await api.getProject(projectId);
+                stageSelect.innerHTML = '<option value="">-- Выберите этап --</option>';
+                if (project.stages) {
+                    project.stages.forEach(s => {
+                        stageSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                showAlert('Ошибка загрузки этапов: ' + error.message, 'error');
+            }
+        }
+        
+        document.getElementById('telegramSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = document.getElementById('telegramBotToken').value || null;
+            const chatId = document.getElementById('telegramTestChatId').value || null;
+            if (chatId) {
+                const normalized = chatId.trim();
+                const numeric = /^-?\d+$/.test(normalized);
+                if (!numeric) {
+                    showAlert('Telegram Chat ID должен быть числом', 'error');
+                    return;
+                }
+            }
+            
+            try {
+                await api.updateTelegramBotSettings({
+                    telegram_bot_token: token,
+                    telegram_test_chat_id: chatId,
+                    telegram_default_project_id: currentSettings.telegram_default_project_id,
+                    telegram_default_stage_id: currentSettings.telegram_default_stage_id
+                });
+                showAlert('Настройки сохранены', 'success');
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        document.getElementById('telegramTasksForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const projectId = document.getElementById('telegramDefaultProject').value || null;
+            const stageId = document.getElementById('telegramDefaultStage').value || null;
+            
+            try {
+                const result = await api.updateTelegramBotSettings({
+                    telegram_bot_token: document.getElementById('telegramBotToken').value || null,
+                    telegram_test_chat_id: document.getElementById('telegramTestChatId').value || null,
+                    telegram_default_project_id: projectId ? parseInt(projectId) : null,
+                    telegram_default_stage_id: stageId ? parseInt(stageId) : null
+                });
+                currentSettings = result;
+                showAlert('Настройки заявок сохранены', 'success');
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('testTelegramBtn').addEventListener('click', async () => {
+            try {
+                await api.testTelegramBot();
+                showAlert('Тестовое сообщение отправлено', 'success');
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        init();
+    </script>
+</body>
+</html>
+

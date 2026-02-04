@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пользователи - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            min-width: 100%;
+            table-layout: fixed;
+        }
+        
+        .table th,
+        .table td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .table th:nth-child(1),
+        .table td:nth-child(1) {
+            width: 5%;
+        }
+        
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 25%;
+        }
+        
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 35%;
+        }
+        
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            width: 35%;
+        }
+        
+        /* Specific widths for organizations table */
+        #organizationsTableBody ~ thead th:nth-child(1),
+        #organizationsTableBody ~ thead th:nth-child(1),
+        #organizationsTableBody tr td:nth-child(1) {
+            width: 5%;
+        }
+        
+        #organizationsTableBody ~ thead th:nth-child(2),
+        #organizationsTableBody tr td:nth-child(2) {
+            width: 30%;
+        }
+        
+        #organizationsTableBody ~ thead th:nth-child(3),
+        #organizationsTableBody tr td:nth-child(3) {
+            width: 65%;
+        }
+        
+        /* Specific widths for departments table */
+        #departmentsTableBody ~ thead th:nth-child(1),
+        #departmentsTableBody tr td:nth-child(1) {
+            width: 5%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(2),
+        #departmentsTableBody tr td:nth-child(2) {
+            width: 25%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(3),
+        #departmentsTableBody tr td:nth-child(3) {
+            width: 25%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(4),
+        #departmentsTableBody tr td:nth-child(4) {
+            width: 45%;
+        }
+        
+        /* Specific widths for users table */
+        #mainTabUsersContent .table thead th:nth-child(1),
+        #mainTabUsersContent .table tbody td:nth-child(1) {
+            width: 5%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(2),
+        #mainTabUsersContent .table tbody td:nth-child(2) {
+            width: 15%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(3),
+        #mainTabUsersContent .table tbody td:nth-child(3) {
+            width: 15%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(4),
+        #mainTabUsersContent .table tbody td:nth-child(4) {
+            width: 18%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(5),
+        #mainTabUsersContent .table tbody td:nth-child(5) {
+            width: 18%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(6),
+        #mainTabUsersContent .table tbody td:nth-child(6) {
+            width: 14%;
+        }
+        
+        #mainTabUsersContent .table thead th:nth-child(7),
+        #mainTabUsersContent .table tbody td:nth-child(7) {
+            width: 15%;
+        }
+        
+        /* Specific widths for roles table */
+        #mainTabRolesContent .table thead th:nth-child(1),
+        #mainTabRolesContent .table tbody td:nth-child(1) {
+            width: 5%;
+        }
+        
+        #mainTabRolesContent .table thead th:nth-child(2),
+        #mainTabRolesContent .table tbody td:nth-child(2) {
+            width: 30%;
+        }
+        
+        #mainTabRolesContent .table thead th:nth-child(3),
+        #mainTabRolesContent .table tbody td:nth-child(3) {
+            width: 65%;
+        }
+        
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        
+        .tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            background: transparent;
+        }
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            min-width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.75rem;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        .table th {
+            text-align: left;
+        }
+        
+        .table td {
+            text-align: left;
+        }
+        
+        /* Organizations table - 3 columns */
+        #organizationsTableBody ~ thead th:nth-child(1),
+        #organizationsTableBody tr td:nth-child(1) {
+            width: 8%;
+        }
+        
+        #organizationsTableBody ~ thead th:nth-child(2),
+        #organizationsTableBody tr td:nth-child(2) {
+            width: 30%;
+        }
+        
+        #organizationsTableBody ~ thead th:nth-child(3),
+        #organizationsTableBody tr td:nth-child(3) {
+            width: 62%;
+        }
+        
+        /* Departments table - 4 columns */
+        #departmentsTableBody ~ thead th:nth-child(1),
+        #departmentsTableBody tr td:nth-child(1) {
+            width: 8%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(2),
+        #departmentsTableBody tr td:nth-child(2) {
+            width: 25%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(3),
+        #departmentsTableBody tr td:nth-child(3) {
+            width: 25%;
+        }
+        
+        #departmentsTableBody ~ thead th:nth-child(4),
+        #departmentsTableBody tr td:nth-child(4) {
+            width: 42%;
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/projects" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span class="gradient-text">Lifeline</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/projects" class="nav-link">Проекты</a>
+                <a href="/users" class="nav-link active">Пользователи</a>
+                <a href="/settings" class="nav-link" id="settingsNavLink" style="display: none;">Настройки</a>
+            </div>
+            <div class="user-menu"></div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="users-header">
+            <div>
+                <h1>Управление пользователями</h1>
+                <p class="text-secondary" style="margin-top: 0.5rem;">Создание, редактирование и управление пользователями системы</p>
+            </div>
+            <div id="headerButtons">
+                <button class="btn btn-primary" onclick="openModal('createUserModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Новый пользователь
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs" style="margin-bottom: 1.5rem;">
+            <button type="button" class="tab active" onclick="switchMainTab('users')" id="mainTabUsers">
+                Сотрудники
+            </button>
+            <button type="button" class="tab" onclick="switchMainTab('organizations')" id="mainTabOrganizations">
+                Организации
+            </button>
+            <button type="button" class="tab" onclick="switchMainTab('departments')" id="mainTabDepartments">
+                Подразделения
+            </button>
+            <button type="button" class="tab" onclick="switchMainTab('roles')" id="mainTabRoles">
+                Роли
+            </button>
+        </div>
+        
+        <!-- Users Tab Content -->
+        <div id="mainTabUsersContent" class="tab-content active">
+            <!-- Filters -->
+            <div class="task-filters" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                <div class="form-group" style="margin: 0; min-width: 200px;">
+                    <label class="form-label" for="filterUserOrganization" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Организация</label>
+                    <select id="filterUserOrganization" class="form-select" onchange="filterUsers()">
+                        <option value="">Все организации</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; min-width: 200px;">
+                    <label class="form-label" for="filterUserDepartment" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Подразделение</label>
+                    <select id="filterUserDepartment" class="form-select" onchange="filterUsers()">
+                        <option value="">Все подразделения</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; min-width: 150px;">
+                    <label class="form-label" for="filterUserType" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Тип</label>
+                    <select id="filterUserType" class="form-select" onchange="filterUsers()">
+                        <option value="">Все типы</option>
+                        <option value="admin">Администратор</option>
+                        <option value="developer">Исполнитель</option>
+                        <option value="user">Пользователь</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; min-width: 150px;">
+                    <label class="form-label" for="filterUserStatus" style="font-size: 0.875rem; margin-bottom: 0.25rem;">Статус</label>
+                    <select id="filterUserStatus" class="form-select" onchange="filterUsers()">
+                        <option value="">Все статусы</option>
+                        <option value="active">Активен</option>
+                        <option value="blocked">Заблокирован</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; margin-top: 1.5rem;">
+                    <button class="btn btn-secondary" onclick="clearUserFilters()" style="white-space: nowrap;">
+                        Сбросить фильтры
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя пользователя</th>
+                            <th>Полное имя</th>
+                            <th>Организация</th>
+                            <th>Подразделение</th>
+                            <th>Тип</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <div class="loading"><div class="spinner"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Organizations Tab Content -->
+        <div id="mainTabOrganizationsContent" class="tab-content" style="display: none;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody id="organizationsTableBody">
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <div class="loading"><div class="spinner"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Departments Tab Content -->
+        <div id="mainTabDepartmentsContent" class="tab-content" style="display: none;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Организация</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody id="departmentsTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <div class="loading"><div class="spinner"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Roles Tab Content -->
+        <div id="mainTabRolesContent" class="tab-content" style="display: none;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rolesTableBody">
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <div class="loading"><div class="spinner"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Create User Modal -->
+    <div class="modal-overlay" id="createUserModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать пользователя</h3>
+                <button class="modal-close" onclick="closeModal('createUserModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createUserForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="createUsername">Имя пользователя *</label>
+                        <input type="text" id="createUsername" class="form-input" placeholder="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createEmail">Email *</label>
+                        <input type="email" id="createEmail" class="form-input" placeholder="user@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createPassword">Пароль *</label>
+                        <input type="password" id="createPassword" class="form-input" placeholder="Пароль" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createFullName">Полное имя</label>
+                        <input type="text" id="createFullName" class="form-input" placeholder="Иван Иванов">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createTelegram">Telegram</label>
+                        <input type="text" id="createTelegram" class="form-input" placeholder="@username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createPhone">Телефон</label>
+                        <input type="tel" id="createPhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createUserType">Тип пользователя *</label>
+                        <select id="createUserType" class="form-select" required>
+                            <option value="user">Пользователь</option>
+                            <option value="developer">Исполнитель</option>
+                            <option value="admin">Администратор</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createOrganization">Организация</label>
+                        <select id="createOrganization" class="form-select" onchange="loadCreateDepartments()">
+                            <option value="">-- Не выбрано --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createDepartment">Подразделение</label>
+                        <select id="createDepartment" class="form-select">
+                            <option value="">-- Не выбрано --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createUserModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать пользователя</h3>
+                <button class="modal-close" onclick="closeModal('editUserModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="modal-body">
+                    <!-- Tabs -->
+                    <div class="tabs" style="margin-bottom: 1.5rem;">
+                        <button type="button" class="tab active" onclick="switchUserTab('main')" id="userTabMain">
+                            Основное
+                        </button>
+                        <button type="button" class="tab" onclick="switchUserTab('info')" id="userTabInfo">
+                            Информация
+                        </button>
+                        <button type="button" class="tab" onclick="switchUserTab('projects')" id="userTabProjects">
+                            Проекты
+                        </button>
+                        <button type="button" class="tab" onclick="switchUserTab('roles')" id="userTabRoles">
+                            Роли
+                        </button>
+                    </div>
+                    
+                    <!-- Main Tab -->
+                    <div id="userTabMainContent">
+                        <div class="form-group">
+                            <label class="form-label" for="editUsername">Имя пользователя</label>
+                            <input type="text" id="editUsername" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editFullName">Полное имя</label>
+                            <input type="text" id="editFullName" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editPassword">Новый пароль</label>
+                            <input type="password" id="editPassword" class="form-input" placeholder="Оставьте пустым, чтобы не менять">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editUserType">Тип пользователя</label>
+                            <select id="editUserType" class="form-select">
+                                <option value="user">Пользователь</option>
+                                <option value="developer">Исполнитель</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editOrganization">Организация</label>
+                            <select id="editOrganization" class="form-select">
+                                <option value="">-- Не выбрано --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editDepartment">Подразделение</label>
+                            <select id="editDepartment" class="form-select">
+                                <option value="">-- Не выбрано --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="editIsBlocked">
+                                <span>Заблокирован</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Tab (Contact Information) -->
+                    <div id="userTabInfoContent" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="editEmail">Email *</label>
+                            <input type="email" id="editEmail" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editTelegram">Telegram</label>
+                            <input type="text" id="editTelegram" class="form-input" placeholder="@username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editPhone">Телефон</label>
+                            <input type="tel" id="editPhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                        </div>
+                    </div>
+                    
+                    <!-- Projects Tab -->
+                    <div id="userTabProjectsContent" style="display: none;">
+                        <div style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            Выберите проекты, доступные пользователю, и укажите права доступа. Если проект не указан, пользователь не будет видеть его.
+                        </div>
+                        <div id="userProjectsList" style="max-height: 400px; overflow-y: auto;">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Roles Tab -->
+                    <div id="userTabRolesContent" style="display: none;">
+                        <div style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            Выберите роли для пользователя. Пользователю может быть назначено несколько ролей.
+                        </div>
+                        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10%;"></th>
+                                        <th style="width: 90%;">Название</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userRolesTableBody">
+                                    <tr>
+                                        <td colspan="2" class="text-center">
+                                            <div class="loading"><div class="spinner"></div></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editUserModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Organization Modal -->
+    <div class="modal-overlay" id="createOrgModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать организацию</h3>
+                <button class="modal-close" onclick="closeModal('createOrgModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createOrgForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="createOrgName">Название *</label>
+                        <input type="text" id="createOrgName" class="form-input" placeholder="Название организации" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createOrgDescription">Описание</label>
+                        <textarea id="createOrgDescription" class="form-textarea" placeholder="Описание организации"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createOrgModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Organization Modal -->
+    <div class="modal-overlay" id="editOrgModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать организацию</h3>
+                <button class="modal-close" onclick="closeModal('editOrgModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="editOrgForm">
+                <input type="hidden" id="editOrgId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editOrgName">Название *</label>
+                        <input type="text" id="editOrgName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editOrgDescription">Описание</label>
+                        <textarea id="editOrgDescription" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editOrgModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Department Modal -->
+    <div class="modal-overlay" id="createDeptModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать подразделение</h3>
+                <button class="modal-close" onclick="closeModal('createDeptModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createDeptForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="createDeptName">Название *</label>
+                        <input type="text" id="createDeptName" class="form-input" placeholder="Название подразделения" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createDeptOrganization">Организация *</label>
+                        <select id="createDeptOrganization" class="form-select" required>
+                            <option value="">-- Выберите организацию --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createDeptDescription">Описание</label>
+                        <textarea id="createDeptDescription" class="form-textarea" placeholder="Описание подразделения"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createDeptModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Department Modal -->
+    <div class="modal-overlay" id="editDeptModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать подразделение</h3>
+                <button class="modal-close" onclick="closeModal('editDeptModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="editDeptForm">
+                <input type="hidden" id="editDeptId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editDeptName">Название *</label>
+                        <input type="text" id="editDeptName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editDeptOrganization">Организация *</label>
+                        <select id="editDeptOrganization" class="form-select" required>
+                            <option value="">-- Выберите организацию --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editDeptDescription">Описание</label>
+                        <textarea id="editDeptDescription" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editDeptModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Role Modal -->
+    <div class="modal-overlay" id="editRoleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать роль</h3>
+                <button class="modal-close" onclick="closeModal('editRoleModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="editRoleForm">
+                <input type="hidden" id="editRoleId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editRoleName">Название *</label>
+                        <input type="text" id="editRoleName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editRoleDescription">Описание</label>
+                        <textarea id="editRoleDescription" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="deleteCurrentRole()">Удалить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editRoleModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Role Modal -->
+    <div class="modal-overlay" id="createRoleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать роль</h3>
+                <button class="modal-close" onclick="closeModal('createRoleModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createRoleForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="createRoleName">Название *</label>
+                        <input type="text" id="createRoleName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createRoleDescription">Описание</label>
+                        <textarea id="createRoleDescription" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createRoleModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        let users = [];
+        let currentUser = null;
+        let organizations = [];
+        let departments = [];
+        let roles = [];
+        let activeMainTab = 'users';
+        
+        async function init() {
+            currentUser = await api.getCurrentUser();
+            if (!currentUser.is_admin) {
+                window.location.href = '/projects';
+                return;
+            }
+            setupUserMenu();
+            await loadOrganizations();
+            await loadDepartments();
+            await loadRoles();
+            await loadUsers();
+            updateHeaderButtons();
+            
+            // Populate department filter when organization changes
+            document.getElementById('filterUserOrganization')?.addEventListener('change', function() {
+                const orgId = this.value;
+                const deptFilter = document.getElementById('filterUserDepartment');
+                if (deptFilter) {
+                    deptFilter.innerHTML = '<option value="">Все подразделения</option>';
+                    if (orgId) {
+                        allDepartments.filter(d => d.organization_id == orgId).forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept.id;
+                            option.textContent = dept.name;
+                            deptFilter.appendChild(option);
+                        });
+                    } else {
+                        allUsers.forEach(user => {
+                            if (user.department_id) {
+                                const dept = allDepartments.find(d => d.id === user.department_id);
+                                if (dept && !Array.from(deptFilter.options).some(opt => opt.value == dept.id)) {
+                                    const option = document.createElement('option');
+                                    option.value = dept.id;
+                                    option.textContent = dept.name;
+                                    deptFilter.appendChild(option);
+                                }
+                            }
+                        });
+                    }
+                    deptFilter.value = ''; // Reset department filter
+                }
+                filterUsers();
+            });
+        }
+        
+        function switchMainTab(tab) {
+            activeMainTab = tab;
+            
+            // Hide all tab contents
+            document.getElementById('mainTabUsersContent').style.display = 'none';
+            document.getElementById('mainTabOrganizationsContent').style.display = 'none';
+            document.getElementById('mainTabDepartmentsContent').style.display = 'none';
+            document.getElementById('mainTabRolesContent').style.display = 'none';
+            
+            // Remove active class from all tabs
+            document.getElementById('mainTabUsers').classList.remove('active');
+            document.getElementById('mainTabOrganizations').classList.remove('active');
+            document.getElementById('mainTabDepartments').classList.remove('active');
+            document.getElementById('mainTabRoles').classList.remove('active');
+            
+            // Show selected tab content
+            if (tab === 'users') {
+                document.getElementById('mainTabUsersContent').style.display = 'block';
+                document.getElementById('mainTabUsers').classList.add('active');
+            } else if (tab === 'organizations') {
+                document.getElementById('mainTabOrganizationsContent').style.display = 'block';
+                document.getElementById('mainTabOrganizations').classList.add('active');
+                loadOrganizationsTable();
+            } else if (tab === 'departments') {
+                document.getElementById('mainTabDepartmentsContent').style.display = 'block';
+                document.getElementById('mainTabDepartments').classList.add('active');
+                if (allDepartments.length === 0) {
+                    loadDepartmentsTable();
+                } else {
+                    filterDepartments();
+                }
+            } else if (tab === 'roles') {
+                document.getElementById('mainTabRolesContent').style.display = 'block';
+                document.getElementById('mainTabRoles').classList.add('active');
+                loadRolesTable();
+            }
+            
+            updateHeaderButtons();
+        }
+        
+        function updateHeaderButtons() {
+            const headerButtons = document.getElementById('headerButtons');
+            if (activeMainTab === 'users') {
+                headerButtons.innerHTML = `
+                    <button class="btn btn-primary" onclick="openModal('createUserModal')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Новый пользователь
+                    </button>
+                `;
+            } else if (activeMainTab === 'organizations') {
+                headerButtons.innerHTML = `
+                    <button class="btn btn-primary" onclick="openCreateOrgModal()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Новая организация
+                    </button>
+                `;
+            } else if (activeMainTab === 'departments') {
+                headerButtons.innerHTML = `
+                    <button class="btn btn-primary" onclick="openCreateDeptModal()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Новое подразделение
+                    </button>
+                `;
+            } else if (activeMainTab === 'roles') {
+                headerButtons.innerHTML = `
+                    <button class="btn btn-primary" onclick="openModal('createRoleModal')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Создать роль
+                    </button>
+                `;
+            }
+        }
+        
+        async function loadOrganizations() {
+            try {
+                organizations = await api.getOrganizations();
+                populateOrgSelects();
+            } catch (error) {
+                console.error('Failed to load organizations:', error);
+            }
+        }
+        
+        async function loadDepartments(organizationId = null) {
+            try {
+                if (organizationId) {
+                    departments = await api.getDepartments(organizationId);
+                } else {
+                    departments = await api.getDepartments();
+                    allDepartments = departments; // Store for filtering
+                }
+            } catch (error) {
+                console.error('Failed to load departments:', error);
+            }
+        }
+        
+        async function loadRoles() {
+            try {
+                roles = await api.getRoles();
+                populateRoleSelects();
+            } catch (error) {
+                console.error('Failed to load roles:', error);
+            }
+        }
+        
+        function populateRoleSelects() {
+            // For create role select
+            const createRoleSelect = document.getElementById('createRole');
+            if (createRoleSelect) {
+                createRoleSelect.innerHTML = '<option value="">-- Не выбрано --</option>';
+                roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.id;
+                    option.textContent = role.name;
+                    createRoleSelect.appendChild(option);
+                });
+            }
+        }
+        
+        let userRoles = [];
+        
+        function renderUserRoles() {
+            const tbody = document.getElementById('userRolesTableBody');
+            
+            if (roles.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет ролей</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = roles.map(role => {
+                const isSelected = userRoles.some(ur => ur.id === role.id);
+                return `
+                    <tr>
+                        <td>
+                            <label class="form-checkbox" style="margin: 0; cursor: pointer;">
+                                <input type="checkbox" 
+                                       data-role-id="${role.id}" 
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleUserRole(${role.id}, this.checked)">
+                            </label>
+                        </td>
+                        <td>${escapeHtml(role.name)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function toggleUserRole(roleId, isSelected) {
+            if (isSelected) {
+                const role = roles.find(r => r.id === roleId);
+                if (role && !userRoles.some(ur => ur.id === roleId)) {
+                    userRoles.push(role);
+                }
+            } else {
+                userRoles = userRoles.filter(ur => ur.id !== roleId);
+            }
+        }
+        
+        function populateOrganizations() {
+            const select = document.getElementById('editOrganization');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">-- Не выбрано --</option>';
+            organizations.forEach(org => {
+                const option = document.createElement('option');
+                option.value = org.id;
+                option.textContent = org.name;
+                select.appendChild(option);
+            });
+        }
+        
+        function populateOrgSelects() {
+            const selects = ['createDeptOrganization', 'editDeptOrganization', 'createOrganization'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                
+                select.innerHTML = '<option value="">-- Не выбрано --</option>';
+                organizations.forEach(org => {
+                    const option = document.createElement('option');
+                    option.value = org.id;
+                    option.textContent = org.name;
+                    select.appendChild(option);
+                });
+            });
+        }
+        
+        async function loadCreateDepartments() {
+            const orgId = document.getElementById('createOrganization').value;
+            const select = document.getElementById('createDepartment');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">-- Не выбрано --</option>';
+            
+            if (!orgId) return;
+            
+            const filteredDepts = allDepartments.filter(d => d.organization_id === parseInt(orgId));
+            filteredDepts.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.id;
+                option.textContent = dept.name;
+                select.appendChild(option);
+            });
+        }
+        
+        function populateDepartments(organizationId = null) {
+            const select = document.getElementById('editDepartment');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">-- Не выбрано --</option>';
+            const filteredDepts = organizationId 
+                ? departments.filter(d => d.organization_id === organizationId)
+                : departments;
+            
+            filteredDepts.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.id;
+                option.textContent = dept.name;
+                select.appendChild(option);
+            });
+        }
+        
+        function setupUserMenu() {
+            const userMenu = document.querySelector('.user-menu');
+            if (userMenu && currentUser) {
+                userMenu.innerHTML = `
+                    <a href="/profile" class="user-name-link" style="cursor: pointer; text-decoration: none; color: var(--text-secondary); transition: color 0.2s;">
+                        <span class="text-secondary">${currentUser.full_name || currentUser.username}</span>
+                    </a>
+                    <a href="/profile" class="user-avatar-link" style="cursor: pointer; text-decoration: none;">
+                        <div class="user-avatar">${getInitials(currentUser.full_name || currentUser.username)}</div>
+                    </a>
+                    <button class="btn btn-ghost btn-sm" onclick="auth.logout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                        </svg>
+                    </button>
+                `;
+            }
+        }
+        
+        let allUsers = []; // Store all users for filtering
+        
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            try {
+                allUsers = await api.getUsers();
+                populateUserFilters();
+                filterUsers();
+            } catch (error) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="empty-state">
+                                <p>Ошибка загрузки: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function populateUserFilters() {
+            // Populate organization filter
+            const orgFilter = document.getElementById('filterUserOrganization');
+            if (orgFilter) {
+                const orgIds = new Set();
+                allUsers.forEach(user => {
+                    if (user.organization_id) {
+                        orgIds.add(user.organization_id);
+                    }
+                });
+                
+                orgFilter.innerHTML = '<option value="">Все организации</option>';
+                organizations.forEach(org => {
+                    if (orgIds.has(org.id)) {
+                        const option = document.createElement('option');
+                        option.value = org.id;
+                        option.textContent = org.name;
+                        orgFilter.appendChild(option);
+                    }
+                });
+            }
+            
+            // Populate department filter
+            const deptFilter = document.getElementById('filterUserDepartment');
+            if (deptFilter) {
+                const deptIds = new Set();
+                allUsers.forEach(user => {
+                    if (user.department_id) {
+                        deptIds.add(user.department_id);
+                    }
+                });
+                
+                deptFilter.innerHTML = '<option value="">Все подразделения</option>';
+                allDepartments.forEach(dept => {
+                    if (deptIds.has(dept.id)) {
+                        const option = document.createElement('option');
+                        option.value = dept.id;
+                        option.textContent = dept.name;
+                        deptFilter.appendChild(option);
+                    }
+                });
+            }
+        }
+        
+        function filterUsers() {
+            const orgFilter = document.getElementById('filterUserOrganization')?.value || '';
+            const deptFilter = document.getElementById('filterUserDepartment')?.value || '';
+            const typeFilter = document.getElementById('filterUserType')?.value || '';
+            const statusFilter = document.getElementById('filterUserStatus')?.value || '';
+            
+            users = allUsers.filter(user => {
+                if (orgFilter && user.organization_id != orgFilter) return false;
+                if (deptFilter && user.department_id != deptFilter) return false;
+                if (typeFilter && user.user_type !== typeFilter) return false;
+                if (statusFilter === 'active' && user.is_blocked) return false;
+                if (statusFilter === 'blocked' && !user.is_blocked) return false;
+                return true;
+            });
+            
+            renderUsers();
+        }
+        
+        function clearUserFilters() {
+            document.getElementById('filterUserOrganization').value = '';
+            document.getElementById('filterUserDepartment').value = '';
+            document.getElementById('filterUserType').value = '';
+            document.getElementById('filterUserStatus').value = '';
+            filterUsers();
+        }
+        
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет пользователей</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const userTypeBadges = {
+                'admin': `<span class="user-type-badge admin">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Администратор
+                </span>`,
+                'developer': `<span class="user-type-badge executor">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Исполнитель
+                </span>`,
+                'user': `<span class="user-type-badge user">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Пользователь
+                </span>`
+            };
+            
+            tbody.innerHTML = users.map(user => {
+                const userType = user.user_type || 'user';
+                const typeBadge = userTypeBadges[userType] || userTypeBadges['user'];
+                
+                const statusBadge = user.is_blocked 
+                    ? `<span class="user-status-badge blocked">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                        </svg>
+                        Заблокирован
+                    </span>`
+                    : `<span class="user-status-badge active">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Активен
+                    </span>`;
+                
+                const fullName = user.full_name || user.username;
+                const usernameDisplay = fullName || user.username;
+                
+                return `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>
+                            <a href="#" class="user-edit-link" data-user-id="${user.id}" 
+                               style="color: var(--accent-primary); text-decoration: none; cursor: pointer; font-weight: 500;">
+                                ${escapeHtml(usernameDisplay)}
+                            </a>
+                        </td>
+                        <td>${escapeHtml(user.full_name || '')}</td>
+                        <td>${user.organization ? escapeHtml(user.organization.name) : ''}</td>
+                        <td>${user.department ? escapeHtml(user.department.name) : ''}</td>
+                        <td>${typeBadge}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Add event listeners to user edit links
+            tbody.querySelectorAll('.user-edit-link').forEach(link => {
+                link.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const userId = parseInt(link.getAttribute('data-user-id'));
+                    if (userId && window.openEditUser) {
+                        await window.openEditUser(userId);
+                    } else {
+                        console.error('openEditUser not found or userId invalid', userId, window.openEditUser);
+                    }
+                });
+            });
+        }
+        
+        let userProjects = [];
+        
+        function switchUserTab(tab) {
+            // Hide all tabs
+            document.getElementById('userTabMainContent').style.display = 'none';
+            document.getElementById('userTabInfoContent').style.display = 'none';
+            document.getElementById('userTabProjectsContent').style.display = 'none';
+            document.getElementById('userTabRolesContent').style.display = 'none';
+            document.getElementById('userTabMain').classList.remove('active');
+            document.getElementById('userTabInfo').classList.remove('active');
+            document.getElementById('userTabProjects').classList.remove('active');
+            document.getElementById('userTabRoles').classList.remove('active');
+            
+            // Show selected tab
+            if (tab === 'main') {
+                document.getElementById('userTabMainContent').style.display = 'block';
+                document.getElementById('userTabMain').classList.add('active');
+            } else if (tab === 'info') {
+                document.getElementById('userTabInfoContent').style.display = 'block';
+                document.getElementById('userTabInfo').classList.add('active');
+            } else if (tab === 'projects') {
+                document.getElementById('userTabProjectsContent').style.display = 'block';
+                document.getElementById('userTabProjects').classList.add('active');
+                loadUserProjects();
+            } else if (tab === 'roles') {
+                document.getElementById('userTabRolesContent').style.display = 'block';
+                document.getElementById('userTabRoles').classList.add('active');
+                renderUserRoles();
+            }
+        }
+        
+        async function loadUserProjects() {
+            const userId = parseInt(document.getElementById('editUserId').value);
+            if (!userId) return;
+            
+            const list = document.getElementById('userProjectsList');
+            list.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                userProjects = await api.getUserProjects(userId);
+                renderUserProjects();
+            } catch (error) {
+                list.innerHTML = `<div class="empty-state"><p>Ошибка загрузки: ${error.message}</p></div>`;
+            }
+        }
+        
+        function renderUserProjects() {
+            const list = document.getElementById('userProjectsList');
+            
+            if (userProjects.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>Нет проектов</p></div>';
+                return;
+            }
+            
+            list.innerHTML = userProjects.map(project => {
+                const hasPermission = project.permission_type !== null;
+                const permissionType = project.permission_type || 'none';
+                
+                return `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 0.75rem; background: var(--bg-secondary);">
+                        <label class="form-checkbox" style="flex: 1; margin: 0; cursor: pointer;">
+                            <input type="checkbox" 
+                                   data-project-id="${project.id}" 
+                                   ${hasPermission ? 'checked' : ''} 
+                                   onchange="updateProjectPermission(${project.id}, this.checked)">
+                            <span style="font-weight: 500;">${escapeHtml(project.name)}</span>
+                        </label>
+                        <select class="form-select" 
+                                style="width: 150px;"
+                                data-project-id="${project.id}"
+                                ${!hasPermission ? 'disabled' : ''}
+                                onchange="updateProjectPermissionType(${project.id}, this.value)">
+                            <option value="read" ${permissionType === 'read' ? 'selected' : ''}>Чтение</option>
+                            <option value="write" ${permissionType === 'write' ? 'selected' : ''}>Запись</option>
+                        </select>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateProjectPermission(projectId, hasAccess) {
+            const project = userProjects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            if (hasAccess) {
+                // Set default permission to "read" if not set
+                if (!project.permission_type) {
+                    project.permission_type = 'read';
+                }
+            } else {
+                project.permission_type = null;
+            }
+            
+            // Update select state
+            const select = document.querySelector(`select[data-project-id="${projectId}"]`);
+            if (select) {
+                select.disabled = !hasAccess;
+                if (hasAccess && project.permission_type) {
+                    select.value = project.permission_type;
+                }
+            }
+        }
+        
+        function updateProjectPermissionType(projectId, permissionType) {
+            const project = userProjects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            project.permission_type = permissionType;
+        }
+        
+        window.openEditUser = async function(userId) {
+            try {
+                const user = users.find(u => u.id === userId);
+                if (!user) {
+                    console.error('User not found:', userId);
+                    return;
+                }
+                
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editEmail').value = user.email || '';
+                document.getElementById('editFullName').value = user.full_name || '';
+                document.getElementById('editTelegram').value = user.telegram || '';
+                document.getElementById('editPhone').value = user.phone || '';
+                document.getElementById('editUserType').value = user.user_type || 'user';
+                document.getElementById('editIsBlocked').checked = user.is_blocked;
+                document.getElementById('editPassword').value = '';
+                
+                // Populate organizations and departments (only for admins)
+                const orgSelect = document.getElementById('editOrganization');
+                const deptSelect = document.getElementById('editDepartment');
+                
+                // Initialize user roles
+                userRoles = user.roles || [];
+                
+                if (orgSelect && deptSelect) {
+                    if (currentUser && currentUser.is_admin) {
+                        orgSelect.disabled = false;
+                        deptSelect.disabled = false;
+                        populateOrganizations();
+                        if (user.organization_id) {
+                            orgSelect.value = user.organization_id;
+                            await loadDepartments(user.organization_id);
+                            populateDepartments(user.organization_id);
+                            if (user.department_id) {
+                                deptSelect.value = user.department_id;
+                            }
+                        } else {
+                            populateDepartments();
+                            orgSelect.value = '';
+                            deptSelect.value = '';
+                        }
+                    } else {
+                        orgSelect.disabled = true;
+                        deptSelect.disabled = true;
+                    }
+                }
+                
+                // Reset to main tab
+                switchUserTab('main');
+                
+                // Open modal
+                const modal = document.getElementById('editUserModal');
+                if (modal) {
+                    if (typeof openModal === 'function') {
+                        openModal('editUserModal');
+                    } else {
+                        // Fallback if openModal is not available
+                        modal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                } else {
+                    console.error('Modal editUserModal not found');
+                }
+            } catch (error) {
+                console.error('Error opening edit user modal:', error);
+                if (typeof showAlert === 'function') {
+                    showAlert('Ошибка при открытии формы редактирования: ' + error.message, 'error');
+                } else {
+                    alert('Ошибка при открытии формы редактирования: ' + error.message);
+                }
+            }
+        };
+        
+        async function blockUser(userId) {
+            if (!confirm('Вы уверены, что хотите заблокировать этого пользователя? Заблокированные пользователи не смогут войти в систему.')) {
+                return;
+            }
+            
+            try {
+                await api.blockUser(userId);
+                showAlert('Пользователь заблокирован', 'success');
+                loadUsers();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        async function unblockUser(userId) {
+            try {
+                await api.unblockUser(userId);
+                showAlert('Пользователь разблокирован', 'success');
+                loadUsers();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+                return;
+            }
+            
+            try {
+                await api.deleteUser(userId);
+                showAlert('Пользователь удален', 'success');
+                loadUsers();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadOrganizationsTable() {
+            const tbody = document.getElementById('organizationsTableBody');
+            
+            try {
+                organizations = await api.getOrganizations();
+                renderOrganizationsTable();
+            } catch (error) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <div class="empty-state">
+                                <p>Ошибка загрузки: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderOrganizationsTable() {
+            const tbody = document.getElementById('organizationsTableBody');
+            
+            if (organizations.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет организаций</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = organizations.map(org => `
+                <tr>
+                    <td>${org.id}</td>
+                    <td>
+                        <a href="#" class="org-edit-link" data-org-id="${org.id}" 
+                           style="color: var(--accent-primary); text-decoration: none; cursor: pointer; font-weight: 500;">
+                            ${escapeHtml(org.name)}
+                        </a>
+                    </td>
+                    <td>${escapeHtml(org.description || '')}</td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners to organization edit links
+            tbody.querySelectorAll('.org-edit-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const orgId = parseInt(link.getAttribute('data-org-id'));
+                    if (orgId) {
+                        openEditOrg(orgId);
+                    }
+                });
+            });
+        }
+        
+        let allDepartments = []; // Store all departments for filtering
+        
+        async function loadDepartmentsTable() {
+            const tbody = document.getElementById('departmentsTableBody');
+            
+            try {
+                allDepartments = await api.getDepartments();
+                populateDeptFilters();
+                filterDepartments();
+            } catch (error) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="empty-state">
+                                <p>Ошибка загрузки: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function populateDeptFilters() {
+            // Populate organization filter
+            const orgFilter = document.getElementById('filterDeptOrganization');
+            if (orgFilter) {
+                orgFilter.innerHTML = '<option value="">Все организации</option>';
+                organizations.forEach(org => {
+                    const option = document.createElement('option');
+                    option.value = org.id;
+                    option.textContent = org.name;
+                    orgFilter.appendChild(option);
+                });
+            }
+        }
+        
+        function filterDepartments() {
+            const orgFilter = document.getElementById('filterDeptOrganization')?.value || '';
+            
+            departments = allDepartments.filter(dept => {
+                if (orgFilter && dept.organization_id != orgFilter) return false;
+                return true;
+            });
+            
+            renderDepartmentsTable();
+        }
+        
+        function clearDeptFilters() {
+            document.getElementById('filterDeptOrganization').value = '';
+            filterDepartments();
+        }
+        
+        function renderDepartmentsTable() {
+            const tbody = document.getElementById('departmentsTableBody');
+            
+            if (departments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет подразделений</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = departments.map(dept => `
+                <tr>
+                    <td>${dept.id}</td>
+                    <td>
+                        <a href="#" class="dept-edit-link" data-dept-id="${dept.id}" 
+                           style="color: var(--accent-primary); text-decoration: none; cursor: pointer; font-weight: 500;">
+                            ${escapeHtml(dept.name)}
+                        </a>
+                    </td>
+                    <td>${dept.organization ? escapeHtml(dept.organization.name) : ''}</td>
+                    <td>${escapeHtml(dept.description || '')}</td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners to department edit links
+            tbody.querySelectorAll('.dept-edit-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const deptId = parseInt(link.getAttribute('data-dept-id'));
+                    if (deptId) {
+                        openEditDept(deptId);
+                    }
+                });
+            });
+        }
+        
+        function openEditOrg(orgId) {
+            const org = organizations.find(o => o.id === orgId);
+            if (!org) return;
+            
+            document.getElementById('editOrgId').value = org.id;
+            document.getElementById('editOrgName').value = org.name;
+            document.getElementById('editOrgDescription').value = org.description || '';
+            
+            if (typeof openModal === 'function') {
+                openModal('editOrgModal');
+            } else {
+                const modal = document.getElementById('editOrgModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        async function deleteOrg(orgId) {
+            if (!confirm('Вы уверены, что хотите удалить эту организацию? Это действие нельзя отменить.')) {
+                return;
+            }
+            
+            try {
+                await api.deleteOrganization(orgId);
+                showAlert('Организация удалена', 'success');
+                loadOrganizationsTable();
+                await loadOrganizations(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        function openEditDept(deptId) {
+            const dept = departments.find(d => d.id === deptId);
+            if (!dept) return;
+            
+            document.getElementById('editDeptId').value = dept.id;
+            document.getElementById('editDeptName').value = dept.name;
+            document.getElementById('editDeptDescription').value = dept.description || '';
+            
+            // Populate organization select
+            populateOrgSelects();
+            document.getElementById('editDeptOrganization').value = dept.organization_id;
+            
+            if (typeof openModal === 'function') {
+                openModal('editDeptModal');
+            } else {
+                const modal = document.getElementById('editDeptModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        async function deleteDept(deptId) {
+            if (!confirm('Вы уверены, что хотите удалить это подразделение? Это действие нельзя отменить.')) {
+                return;
+            }
+            
+            try {
+                await api.deleteDepartment(deptId);
+                showAlert('Подразделение удалено', 'success');
+                loadDepartmentsTable();
+                await loadDepartments(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        function openCreateOrgModal() {
+            document.getElementById('createOrgForm').reset();
+            if (typeof openModal === 'function') {
+                openModal('createOrgModal');
+            } else {
+                const modal = document.getElementById('createOrgModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        function openCreateDeptModal() {
+            document.getElementById('createDeptForm').reset();
+            populateOrgSelects();
+            if (typeof openModal === 'function') {
+                openModal('createDeptModal');
+            } else {
+                const modal = document.getElementById('createDeptModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        // Form handlers
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const orgId = document.getElementById('createOrganization').value;
+            const deptId = document.getElementById('createDepartment').value;
+            
+            const userData = {
+                username: document.getElementById('createUsername').value,
+                email: document.getElementById('createEmail').value,
+                password: document.getElementById('createPassword').value,
+                full_name: document.getElementById('createFullName').value || null,
+                telegram: document.getElementById('createTelegram').value || null,
+                phone: document.getElementById('createPhone').value || null,
+                user_type: document.getElementById('createUserType').value,
+                organization_id: orgId ? parseInt(orgId) : null,
+                department_id: deptId ? parseInt(deptId) : null,
+                role_ids: []
+            };
+            
+            try {
+                await api.createUser(userData);
+                showAlert('Пользователь создан', 'success');
+                closeModal('createUserModal');
+                document.getElementById('createUserForm').reset();
+                loadUsers();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const userData = {
+                email: document.getElementById('editEmail').value,
+                full_name: document.getElementById('editFullName').value || null,
+                telegram: document.getElementById('editTelegram').value || null,
+                phone: document.getElementById('editPhone').value || null,
+                user_type: document.getElementById('editUserType').value,
+                is_blocked: document.getElementById('editIsBlocked').checked
+            };
+            
+            // Only admins can edit organization, department, and roles
+            if (currentUser && currentUser.is_admin) {
+                userData.organization_id = document.getElementById('editOrganization').value ? parseInt(document.getElementById('editOrganization').value) : null;
+                userData.department_id = document.getElementById('editDepartment').value ? parseInt(document.getElementById('editDepartment').value) : null;
+                userData.role_ids = userRoles.map(role => role.id);
+            }
+            
+            const password = document.getElementById('editPassword').value;
+            if (password) {
+                userData.password = password;
+            }
+            
+            try {
+                // Update user info
+                await api.updateUser(userId, userData);
+                
+                // Update user projects permissions
+                const projectsData = userProjects
+                    .filter(p => !p.is_owner && p.permission_type !== null)
+                    .map(p => ({
+                        project_id: p.id,
+                        permission_type: p.permission_type
+                    }));
+                
+                await api.updateUserProjects(userId, projectsData);
+                
+                showAlert('Пользователь обновлен', 'success');
+                closeModal('editUserModal');
+                loadUsers();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Handle organization change
+        document.addEventListener('DOMContentLoaded', function() {
+            const orgSelect = document.getElementById('editOrganization');
+            if (orgSelect) {
+                orgSelect.addEventListener('change', async function() {
+                    const orgId = parseInt(this.value) || null;
+                    if (orgId) {
+                        await loadDepartments(orgId);
+                        populateDepartments(orgId);
+                    } else {
+                        populateDepartments();
+                    }
+                    // Clear department selection when organization changes
+                    document.getElementById('editDepartment').value = '';
+                });
+            }
+        });
+        
+        // Form handlers for organizations
+        document.getElementById('createOrgForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const orgData = {
+                name: document.getElementById('createOrgName').value,
+                description: document.getElementById('createOrgDescription').value || null
+            };
+            
+            try {
+                await api.createOrganization(orgData);
+                showAlert('Организация создана', 'success');
+                closeModal('createOrgModal');
+                document.getElementById('createOrgForm').reset();
+                loadOrganizationsTable();
+                await loadOrganizations(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        document.getElementById('editOrgForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const orgId = parseInt(document.getElementById('editOrgId').value);
+            const orgData = {
+                name: document.getElementById('editOrgName').value,
+                description: document.getElementById('editOrgDescription').value || null
+            };
+            
+            try {
+                await api.updateOrganization(orgId, orgData);
+                showAlert('Организация обновлена', 'success');
+                closeModal('editOrgModal');
+                loadOrganizationsTable();
+                await loadOrganizations(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        // Form handlers for departments
+        document.getElementById('createDeptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deptData = {
+                name: document.getElementById('createDeptName').value,
+                organization_id: parseInt(document.getElementById('createDeptOrganization').value),
+                description: document.getElementById('createDeptDescription').value || null
+            };
+            
+            try {
+                await api.createDepartment(deptData);
+                showAlert('Подразделение создано', 'success');
+                closeModal('createDeptModal');
+                document.getElementById('createDeptForm').reset();
+                loadDepartmentsTable();
+                await loadDepartments(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        document.getElementById('editDeptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deptId = parseInt(document.getElementById('editDeptId').value);
+            const deptData = {
+                name: document.getElementById('editDeptName').value,
+                organization_id: parseInt(document.getElementById('editDeptOrganization').value),
+                description: document.getElementById('editDeptDescription').value || null
+            };
+            
+            try {
+                await api.updateDepartment(deptId, deptData);
+                showAlert('Подразделение обновлено', 'success');
+                closeModal('editDeptModal');
+                loadDepartmentsTable();
+                await loadDepartments(); // Reload for dropdowns
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        // Roles functions
+        let allRoles = [];
+        
+        async function loadRolesTable() {
+            try {
+                allRoles = await api.getRoles();
+                renderRolesTable();
+            } catch (error) {
+                const tbody = document.getElementById('rolesTableBody');
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center">Ошибка загрузки: ${error.message}</td></tr>`;
+            }
+        }
+        
+        function renderRolesTable() {
+            const tbody = document.getElementById('rolesTableBody');
+            
+            if (allRoles.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет ролей</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = allRoles.map(role => `
+                <tr>
+                    <td>${role.id}</td>
+                    <td><a href="#" class="role-edit-link" data-role-id="${role.id}" style="color: var(--accent-primary); text-decoration: none;">${escapeHtml(role.name)}</a></td>
+                    <td>${escapeHtml(role.description || '')}</td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners to role edit links
+            tbody.querySelectorAll('.role-edit-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const roleId = parseInt(link.getAttribute('data-role-id'));
+                    if (roleId) {
+                        openEditRole(roleId);
+                    }
+                });
+            });
+        }
+        
+        function openEditRole(roleId) {
+            const role = allRoles.find(r => r.id === roleId);
+            if (!role) return;
+            
+            document.getElementById('editRoleId').value = role.id;
+            document.getElementById('editRoleName').value = role.name;
+            document.getElementById('editRoleDescription').value = role.description || '';
+            
+            if (typeof openModal === 'function') {
+                openModal('editRoleModal');
+            } else {
+                const modal = document.getElementById('editRoleModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        window.openEditRole = openEditRole;
+        
+        async function deleteCurrentRole() {
+            const roleId = parseInt(document.getElementById('editRoleId').value);
+            if (!roleId) return;
+            
+            const role = allRoles.find(r => r.id === roleId);
+            if (!role) return;
+            
+            if (!confirm(`Вы уверены, что хотите удалить роль "${role.name}"? Это действие нельзя отменить.`)) {
+                return;
+            }
+            
+            try {
+                await api.deleteRole(roleId);
+                showAlert('Роль удалена', 'success');
+                closeModal('editRoleModal');
+                loadRolesTable();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        // Create role form handler
+        document.getElementById('createRoleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roleData = {
+                name: document.getElementById('createRoleName').value,
+                description: document.getElementById('createRoleDescription').value || null
+            };
+            
+            try {
+                await api.createRole(roleData);
+                showAlert('Роль создана', 'success');
+                closeModal('createRoleModal');
+                document.getElementById('createRoleForm').reset();
+                await loadRoles(); // Reload roles for dropdowns
+                loadRolesTable();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        // Edit role form handler
+        document.getElementById('editRoleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roleId = parseInt(document.getElementById('editRoleId').value);
+            const roleData = {
+                name: document.getElementById('editRoleName').value,
+                description: document.getElementById('editRoleDescription').value || null
+            };
+            
+            try {
+                await api.updateRole(roleId, roleData);
+                showAlert('Роль обновлена', 'success');
+                closeModal('editRoleModal');
+                await loadRoles(); // Reload roles for dropdowns
+                loadRolesTable();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Организации - Lifeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/projects" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span class="gradient-text">Lifeline</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/projects" class="nav-link">Проекты</a>
+                <a href="/users" class="nav-link">Пользователи</a>
+                <a href="/organizations" class="nav-link active">Организации</a>
+                <a href="/departments" class="nav-link">Подразделения</a>
+                <a href="/settings" class="nav-link" id="settingsNavLink" style="display: none;">Настройки</a>
+            </div>
+            <div class="user-menu"></div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="projects-header">
+            <h1>Организации</h1>
+            <button class="btn btn-primary" onclick="openModal('createOrgModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Новая организация
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Описание</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="organizationsTableBody">
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    
+    <!-- Create Organization Modal -->
+    <div class="modal-overlay" id="createOrgModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать организацию</h3>
+                <button class="modal-close" onclick="closeModal('createOrgModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="createOrgForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="createOrgName">Название *</label>
+                        <input type="text" id="createOrgName" class="form-input" placeholder="Название организации" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createOrgDescription">Описание</label>
+                        <textarea id="createOrgDescription" class="form-textarea" placeholder="Описание организации"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createOrgModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Organization Modal -->
+    <div class="modal-overlay" id="editOrgModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать организацию</h3>
+                <button class="modal-close" onclick="closeModal('editOrgModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="editOrgForm">
+                <input type="hidden" id="editOrgId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editOrgName">Название *</label>
+                        <input type="text" id="editOrgName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editOrgDescription">Описание</label>
+                        <textarea id="editOrgDescription" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editOrgModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        let organizations = [];
+        let currentUser = null;
+        
+        async function init() {
+            currentUser = await api.getCurrentUser();
+            if (!currentUser.is_admin) {
+                window.location.href = '/projects';
+                return;
+            }
+            setupUserMenu();
+            loadOrganizations();
+        }
+        
+        function setupUserMenu() {
+            const userMenu = document.querySelector('.user-menu');
+            if (userMenu && currentUser) {
+                userMenu.innerHTML = `
+                    <a href="/profile" class="user-name-link" style="cursor: pointer; text-decoration: none; color: var(--text-secondary); transition: color 0.2s;">
+                        <span class="text-secondary">${currentUser.full_name || currentUser.username}</span>
+                    </a>
+                    <a href="/profile" class="user-avatar-link" style="cursor: pointer; text-decoration: none;">
+                        <div class="user-avatar">${getInitials(currentUser.full_name || currentUser.username)}</div>
+                    </a>
+                    <button class="btn btn-ghost btn-sm" onclick="auth.logout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                        </svg>
+                    </button>
+                `;
+            }
+        }
+        
+        async function loadOrganizations() {
+            const tbody = document.getElementById('organizationsTableBody');
+            
+            try {
+                organizations = await api.getOrganizations();
+                renderOrganizations();
+            } catch (error) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="empty-state">
+                                <p>Ошибка загрузки: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderOrganizations() {
+            const tbody = document.getElementById('organizationsTableBody');
+            
+            if (organizations.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="empty-state">
+                                <p>Нет организаций</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = organizations.map(org => `
+                <tr>
+                    <td>${org.id}</td>
+                    <td>${escapeHtml(org.name)}</td>
+                    <td>${escapeHtml(org.description || '')}</td>
+                    <td>
+                        <div class="flex gap-2" style="justify-content: flex-start;">
+                            <button class="btn btn-sm btn-secondary" onclick="openEditOrg(${org.id})">
+                                Редактировать
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteOrg(${org.id})">
+                                Удалить
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function openEditOrg(orgId) {
+            const org = organizations.find(o => o.id === orgId);
+            if (!org) return;
+            
+            document.getElementById('editOrgId').value = org.id;
+            document.getElementById('editOrgName').value = org.name;
+            document.getElementById('editOrgDescription').value = org.description || '';
+            
+            openModal('editOrgModal');
+        }
+        
+        async function deleteOrg(orgId) {
+            if (!confirm('Вы уверены, что хотите удалить эту организацию? Это действие нельзя отменить.')) {
+                return;
+            }
+            
+            try {
+                await api.deleteOrganization(orgId);
+                showAlert('Организация удалена', 'success');
+                loadOrganizations();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        }
+        
+        // Form handlers
+        document.getElementById('createOrgForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const orgData = {
+                name: document.getElementById('createOrgName').value,
+                description: document.getElementById('createOrgDescription').value || null
+            };
+            
+            try {
+                await api.createOrganization(orgData);
+                showAlert('Организация создана', 'success');
+                closeModal('createOrgModal');
+                document.getElementById('createOrgForm').reset();
+                loadOrganizations();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        document.getElementById('editOrgForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const orgId = parseInt(document.getElementById('editOrgId').value);
+            const orgData = {
+                name: document.getElementById('editOrgName').value,
+                description: document.getElementById('editOrgDescription').value || null
+            };
+            
+            try {
+                await api.updateOrganization(orgId, orgData);
+                showAlert('Организация обновлена', 'success');
+                closeModal('editOrgModal');
+                loadOrganizations();
+            } catch (error) {
+                showAlert('Ошибка: ' + error.message, 'error');
+            }
+        });
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        init();
+    </script>
+</body>
+</html>
+
