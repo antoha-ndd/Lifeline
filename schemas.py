@@ -265,11 +265,13 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    is_archived: Optional[bool] = None
 
 
 class Project(ProjectBase):
     id: int
     owner_id: Optional[int] = None
+    is_archived: bool = False
     created_at: datetime
     updated_at: datetime
     stages: List[Stage] = []

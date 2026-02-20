@@ -507,6 +507,20 @@ body.theme-light .btn-ghost:hover {
     margin: 2rem 0;
 }
 
+.archive-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.archive-toggle input {
+    accent-color: var(--accent-primary);
+}
+
 .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -523,6 +537,22 @@ body.theme-light .btn-ghost:hover {
     transition: var(--transition);
     position: relative;
     overflow: hidden;
+}
+
+.project-card.archived {
+    opacity: 0.7;
+}
+
+.project-archived-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
 }
 
 .project-card::before {
@@ -569,6 +599,16 @@ body.theme-light .btn-ghost:hover {
     gap: 1rem;
     color: var(--text-muted);
     font-size: 0.875rem;
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.project-actions .btn {
+    padding: 0.35rem 0.75rem;
 }
 
 .project-owner {

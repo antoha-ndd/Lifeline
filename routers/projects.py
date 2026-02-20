@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 from database import get_db
 import models
@@ -8,6 +9,7 @@ import schemas
 from auth import get_current_active_user, check_project_permission
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
+UPLOAD_DIR = "uploads"
 
 
 def check_settings_access(current_user: models.User):
@@ -18,20 +20,23 @@ def check_settings_access(current_user: models.User):
 
 @router.get("/", response_model=List[schemas.ProjectWithOwner])
 def get_projects(
+    include_archived: bool = False,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
 ):
     if current_user.is_admin:
-        projects = db.query(models.Project).all()
+        query = db.query(models.Project)
     else:
         # Get projects where user has permission
         permitted_ids = db.query(models.Permission.project_id).filter(
             models.Permission.user_id == current_user.id
         ).all()
-        permitted = db.query(models.Project).filter(
+        query = db.query(models.Project).filter(
             models.Project.id.in_([p[0] for p in permitted_ids])
-        ).all()
-        projects = permitted
+        )
+    if not include_archived:
+        query = query.filter(models.Project.is_archived == False)
+    projects = query.all()
     return projects
 
 
@@ -135,6 +140,8 @@ def update_project(
         project.name = project_update.name
     if project_update.description is not None:
         project.description = project_update.description
+    if project_update.is_archived is not None:
+        project.is_archived = project_update.is_archived
     
     db.commit()
     db.refresh(project)
@@ -154,6 +161,87 @@ def delete_project(
     if not current_user.is_admin and not check_project_permission(db, current_user, project_id, "write"):
         raise HTTPException(status_code=403, detail="Not enough permissions to delete project")
     
+    task_ids = [t[0] for t in db.query(models.Task.id).filter(
+        models.Task.project_id == project_id
+    ).all()]
+
+    if task_ids:
+        attachments = db.query(models.TaskAttachment).filter(
+            models.TaskAttachment.task_id.in_(task_ids)
+        ).all()
+        for attachment in attachments:
+            file_path = os.path.join(UPLOAD_DIR, attachment.stored_filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        db.query(models.TaskAttachment).filter(
+            models.TaskAttachment.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.TaskComment).filter(
+            models.TaskComment.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.TaskHistory).filter(
+            models.TaskHistory.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.FieldValue).filter(
+            models.FieldValue.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.TaskPermission).filter(
+            models.TaskPermission.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.TaskLink).filter(
+            (models.TaskLink.source_task_id.in_(task_ids)) |
+            (models.TaskLink.target_task_id.in_(task_ids))
+        ).delete(synchronize_session=False)
+        db.query(models.Notification).filter(
+            models.Notification.task_id.in_(task_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.Task).filter(
+            models.Task.id.in_(task_ids)
+        ).delete(synchronize_session=False)
+
+    stage_ids = [s[0] for s in db.query(models.Stage.id).filter(
+        models.Stage.project_id == project_id
+    ).all()]
+    field_definition_ids = [f[0] for f in db.query(models.FieldDefinition.id).filter(
+        models.FieldDefinition.project_id == project_id
+    ).all()]
+
+    if stage_ids:
+        db.query(models.StageTransition).filter(
+            (models.StageTransition.from_stage_id.in_(stage_ids)) |
+            (models.StageTransition.to_stage_id.in_(stage_ids)) |
+            (models.StageTransition.project_id == project_id)
+        ).delete(synchronize_session=False)
+        db.query(models.FieldStageRolePermission).filter(
+            models.FieldStageRolePermission.stage_id.in_(stage_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.Stage).filter(
+            models.Stage.id.in_(stage_ids)
+        ).delete(synchronize_session=False)
+    else:
+        db.query(models.StageTransition).filter(
+            models.StageTransition.project_id == project_id
+        ).delete(synchronize_session=False)
+
+    if field_definition_ids:
+        db.query(models.FieldPermission).filter(
+            models.FieldPermission.field_definition_id.in_(field_definition_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.FieldStageRolePermission).filter(
+            models.FieldStageRolePermission.field_definition_id.in_(field_definition_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.FieldDefinition).filter(
+            models.FieldDefinition.id.in_(field_definition_ids)
+        ).delete(synchronize_session=False)
+
+    db.query(models.FieldGroup).filter(
+        models.FieldGroup.project_id == project_id
+    ).delete(synchronize_session=False)
+    db.query(models.Permission).filter(
+        models.Permission.project_id == project_id
+    ).delete(synchronize_session=False)
+
     db.delete(project)
     db.commit()
     return {"message": "Project deleted"}

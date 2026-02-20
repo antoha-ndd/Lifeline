@@ -403,8 +403,9 @@ const api = {
     },
     
     // Projects
-    async getProjects() {
-        return apiRequest('/projects/');
+    async getProjects(includeArchived = false) {
+        const url = includeArchived ? '/projects/?include_archived=true' : '/projects/';
+        return apiRequest(url);
     },
     
     async getProject(id) {

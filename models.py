@@ -116,6 +116,7 @@ class Project(Base):
     name = Column(String(100), index=True)
     description = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    is_archived = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

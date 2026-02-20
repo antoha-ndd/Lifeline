@@ -28,7 +28,13 @@
     
     <main class="container">
         <div class="projects-header">
-            <h1>Мои проекты</h1>
+            <div>
+                <h1>Мои проекты</h1>
+                <label class="archive-toggle">
+                    <input type="checkbox" id="showArchivedToggle" onchange="toggleShowArchived()">
+                    Показать архив
+                </label>
+            </div>
             <button class="btn btn-primary" onclick="openModal('createProjectModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/>
@@ -77,12 +83,14 @@
     <script src="/static/app.js"></script>
     <script>
         let projects = [];
+        let isAdminUser = false;
+        let showArchived = false;
         
         async function loadProjects() {
             const grid = document.getElementById('projectsGrid');
             
             try {
-                projects = await api.getProjects();
+                projects = await api.getProjects(showArchived);
                 renderProjects();
             } catch (error) {
                 grid.innerHTML = `
@@ -114,12 +122,23 @@
             }
             
             grid.innerHTML = projects.map(project => `
-                <div class="project-card" onclick="window.location.href='/project/${project.id}'">
+                <div class="project-card ${project.is_archived ? 'archived' : ''}" onclick="window.location.href='/project/${project.id}'">
+                    ${project.is_archived ? '<span class="project-archived-badge">Архив</span>' : ''}
                     <h3 class="project-name">${escapeHtml(project.name)}</h3>
                     <p class="project-description">${escapeHtml(project.description || 'Без описания')}</p>
                     <div class="project-meta">
                         <span>${project.stages?.length || 0} этапов</span>
                     </div>
+                    ${isAdminUser ? `
+                        <div class="project-actions" onclick="event.stopPropagation()">
+                            <button class="btn btn-secondary btn-sm" onclick="toggleProjectArchive(${project.id})">
+                                ${project.is_archived ? 'Из архива' : 'В архив'}
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${project.id})">
+                                Удалить
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
             `).join('');
         }
@@ -157,7 +176,8 @@
         async function initNav() {
             try {
                 const user = await api.getCurrentUser();
-                if (user.is_admin) {
+                isAdminUser = user.is_admin;
+                if (isAdminUser) {
                     const usersLink = document.getElementById('usersNavLink');
                     if (usersLink) usersLink.style.display = '';
                     const settingsLink = document.getElementById('settingsNavLink');
@@ -171,6 +191,38 @@
                 }
             } catch (error) {
                 console.error('Failed to load user info:', error);
+            }
+        }
+
+        function toggleShowArchived() {
+            showArchived = document.getElementById('showArchivedToggle').checked;
+            loadProjects();
+        }
+
+        async function toggleProjectArchive(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            const newState = !project.is_archived;
+            const message = newState
+                ? 'Переместить проект в архив?'
+                : 'Восстановить проект из архива?';
+            if (!confirm(message)) return;
+            try {
+                await api.updateProject(projectId, { is_archived: newState });
+                loadProjects();
+            } catch (error) {
+                showAlert(error.message);
+            }
+        }
+
+        async function deleteProject(projectId) {
+            if (!confirm('Удалить проект и все содержимое без возможности восстановления?')) return;
+            try {
+                await api.deleteProject(projectId);
+                loadProjects();
+                showAlert('Проект удалён', 'success');
+            } catch (error) {
+                showAlert(error.message);
             }
         }
         
